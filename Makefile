@@ -3,7 +3,7 @@
 COMPOSE := docker compose
 TEST_IMAGE := cyberhoot:test
 
-.PHONY: help secrets install verify test lint smoke up down logs admin schema lock css clean
+.PHONY: help secrets install verify test test-mysql smoke up down logs admin schema lock css clean
 
 help: ## Affiche cette aide
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -27,6 +27,17 @@ verify: ## Lint, format, types, analyse de sécurité, tests et couverture
 test: ## Tests seuls (rapide)
 	docker build -q --target test -t $(TEST_IMAGE) . >/dev/null
 	docker run --rm $(TEST_IMAGE) pytest
+
+test-mysql: ## Tests sur un MySQL jetable (comme l'intégration continue)
+	docker build -q --target test -t $(TEST_IMAGE) . >/dev/null
+	docker network create cyberhoot-test >/dev/null 2>&1 || true
+	docker run -d --rm --name cyberhoot-test-db --network cyberhoot-test \
+	  -e MYSQL_DATABASE=test -e MYSQL_USER=test -e MYSQL_PASSWORD=test -e MYSQL_ROOT_PASSWORD=root \
+	  mysql:8.4 >/dev/null
+	until docker exec cyberhoot-test-db mysql -utest -ptest -e 'SELECT 1' test >/dev/null 2>&1; do sleep 2; done
+	docker run --rm --network cyberhoot-test \
+	  -e TEST_DATABASE_URL='mysql+pymysql://test:test@cyberhoot-test-db/test?charset=utf8mb4' \
+	  $(TEST_IMAGE) pytest; status=$$?; docker stop cyberhoot-test-db >/dev/null; exit $$status
 
 up: secrets ## Démarre la pile (http://localhost:8080)
 	$(COMPOSE) up -d --build --wait

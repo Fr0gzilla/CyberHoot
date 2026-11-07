@@ -17,8 +17,8 @@ jobs:
     name: Lint, types, sécurité du code
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Dépendances (versions figées et vérifiées par empreinte)
@@ -52,8 +52,8 @@ jobs:
     env:
       TEST_DATABASE_URL: mysql+pymysql://test:test-ci-uniquement@127.0.0.1:3306/cyberhoot_test?charset=utf8mb4
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install --require-hashes -r requirements.txt -r requirements-dev.txt
@@ -70,11 +70,11 @@ jobs:
     name: Image Docker et analyse Trivy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Construction de l'image de production
         run: docker build --target production -t cyberhoot:ci .
       - name: Analyse de l'image (vulnérabilités critiques ou élevées corrigeables)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: cyberhoot:ci
           severity: CRITICAL,HIGH
@@ -94,9 +94,9 @@ jobs:
     name: Recherche de secrets
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@v2
+      - uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

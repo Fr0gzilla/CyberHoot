@@ -80,7 +80,11 @@ class ClientIsole(FlaskClient):
 
     def open(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
         with self.application.app_context():
-            return super().open(*args, **kwargs)
+            reponse = super().open(*args, **kwargs)
+        # Termine la transaction du test : sous MySQL (REPEATABLE READ), elle garderait sinon
+        # une image figée de la base et ne verrait pas ce que la requête vient d'enregistrer.
+        db.session.rollback()
+        return reponse
 
 
 @pytest.fixture

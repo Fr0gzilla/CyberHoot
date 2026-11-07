@@ -1,0 +1,9 @@
+# Configuration de la recherche de secrets (gitleaks).
+# Les tests contiennent de faux mots de passe écrits exprès (« Phrase de passe solide 42 »…) :
+# ils ne protègent rien et sont exclus. Tout le reste du dépôt est analysé avec les règles par défaut.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Faux mots de passe des tests"
+paths = ['''^tests/''']
