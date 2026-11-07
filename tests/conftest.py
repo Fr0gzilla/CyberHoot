@@ -89,9 +89,9 @@ def app(database_url: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> I
         mail.boite_envoi.clear()
         yield application
         db.session.remove()
-        # Nettoyage : tout sauf les données de référence (rôles, catégories).
+        # Nettoyage : tout sauf les données de référence (rôles, catégories, badges).
         for table in reversed(db.metadata.sorted_tables):
-            if table.name not in {"role", "category"}:
+            if table.name not in {"role", "category", "badge"}:
                 db.session.execute(delete(table))
         db.session.commit()
 

@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.extensions import db
 from app.models import PlayAnswer, PlaySession, Question, Quiz, QuizStatus, User, utcnow
+from app.services import correction
 
 journal = logging.getLogger(__name__)
 
@@ -65,15 +66,12 @@ def question_courante(partie: PlaySession) -> Question | None:
 class Refus(enum.Enum):
     TERMINEE = "Cette partie est terminée."
     MAUVAISE_QUESTION = "Cette question n'est plus la question en cours."
-    AUCUN_CHOIX = "Choisissez au moins une réponse."
-    CHOIX_INVALIDE = "Réponse invalide."
-    UN_SEUL_CHOIX = "Une seule réponse est attendue pour cette question."
 
 
 @dataclass(frozen=True)
 class Correction:
     reponse: PlayAnswer | None = None
-    refus: Refus | None = None
+    refus: Refus | correction.Refus | None = None
 
 
 def repondre(partie: PlaySession, question_id: int, choix: list[int]) -> Correction:
@@ -82,20 +80,15 @@ def repondre(partie: PlaySession, question_id: int, choix: list[int]) -> Correct
         return Correction(refus=Refus.TERMINEE)
     if question.id != question_id:
         return Correction(refus=Refus.MAUVAISE_QUESTION)
-    selection = set(choix)
-    if not selection:
-        return Correction(refus=Refus.AUCUN_CHOIX)
-    if not selection <= {o.id for o in question.options}:
-        return Correction(refus=Refus.CHOIX_INVALIDE)
-    if not question.multiple and len(selection) > 1:
-        return Correction(refus=Refus.UN_SEUL_CHOIX)
-
-    juste = selection == question.correct_ids
+    verdict = correction.corriger(question, choix)
+    if isinstance(verdict, correction.Refus):
+        return Correction(refus=verdict)
+    juste = verdict
     reponse = PlayAnswer(
         session_id=partie.id,
         position=partie.current_index,
         question_id=question.id,
-        selected_ids=sorted(selection),
+        selected_ids=correction.a_enregistrer(question, choix),
         is_correct=juste,
     )
     db.session.add(reponse)

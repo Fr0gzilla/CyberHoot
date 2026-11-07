@@ -1,0 +1,118 @@
+{# Saisie et correction des réponses, pour chaque type de question.
+   Partagé par le solo, l'écran du joueur en direct et l'écran de l'animateur. #}
+{% from "macros/quiz.html" import FORMES, COULEURS %}
+
+{# En-tête d'un faux message (phishing). #}
+{% macro entete_message(question) -%}
+  {% set p = question.payload or {} %}
+  <div class="border-b border-slate-200 px-4 py-3 text-sm dark:border-nuit-700">
+    {% if p.get('canal') == 'sms' %}
+      <p><span class="font-semibold">SMS de :</span> <span class="font-mono">{{ p.get('expediteur', '') }}</span></p>
+    {% else %}
+      <p><span class="font-semibold">De :</span> <span class="font-mono">{{ p.get('expediteur', '') }}</span></p>
+      {% if p.get('objet') %}<p><span class="font-semibold">Objet :</span> {{ p.get('objet') }}</p>{% endif %}
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro consigne(question) -%}
+  {% if question.kind.value == 'phishing' %}Touchez tous les passages suspects du message, puis validez.
+  {% elif question.kind.value == 'order' %}Donnez un rang à chaque étape (1 = la première).
+  {% elif question.multiple %}Plusieurs réponses sont attendues : cochez toutes les bonnes.
+  {% else %}Une seule réponse.{% endif %}
+{%- endmacro %}
+
+{# Champs de réponse. `grand` : boutons plus hauts (téléphone en direct). #}
+{% macro saisie(question, options, grand=False) %}
+  {% if question.kind.value == 'phishing' %}
+    <div class="message-piege mt-4 overflow-hidden rounded-xl border border-slate-300 bg-white text-slate-900 dark:border-nuit-700 dark:bg-nuit-800 dark:text-slate-100">
+      {{ entete_message(question) }}
+      <div class="px-4 py-3 leading-loose">
+        {% for option in options %}
+          <label class="indice relative cursor-pointer rounded px-0.5"><input type="checkbox" name="choix" value="{{ option.id }}" class="sr-only">{{ option.text }}</label>{{ ' ' }}
+        {% endfor %}
+      </div>
+    </div>
+  {% elif question.kind.value == 'order' %}
+    <ol class="mt-4 space-y-3">
+      {% for option in options %}
+        <li class="flex flex-wrap items-center gap-3 rounded-xl border border-slate-300 px-4 py-3 dark:border-nuit-700 {{ 'text-lg' if grand }}">
+          <label for="rang-{{ option.id }}" class="sr-only">Rang de « {{ option.text }} »</label>
+          <select id="rang-{{ option.id }}" name="rang-{{ option.id }}" class="champ w-20 py-1.5">
+            <option value="">—</option>
+            {% for n in range(1, options|length + 1) %}<option value="{{ n }}">{{ n }}</option>{% endfor %}
+          </select>
+          <span class="flex-1">{{ option.text }}</span>
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+      {% for option in options %}
+        <li>
+          <label class="choix flex {{ 'min-h-[4.5rem] text-lg' if grand else 'min-h-[3.5rem]' }} cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-semibold {{ COULEURS[loop.index0 % 6] }}">
+            <input type="{{ 'checkbox' if question.multiple else 'radio' }}" name="choix" value="{{ option.id }}" class="h-5 w-5 shrink-0">
+            <span aria-hidden="true">{{ FORMES[loop.index0 % 6] }}</span>
+            <span>{{ option.text }}</span>
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}
+
+{# Correction : bonne réponse et réponse du joueur (`selection` : liste d'identifiants). #}
+{% macro corrige(question, selection) %}
+  {% if question.kind.value == 'phishing' %}
+    <div class="mt-4 overflow-hidden rounded-xl border border-slate-300 dark:border-nuit-700">
+      {{ entete_message(question) }}
+      <p class="px-4 py-3 leading-loose">
+        {% for option in question.options %}
+          {% set choisi = option.id in selection %}
+          {% if option.is_correct %}<mark class="rounded bg-amber-200 px-0.5 text-nuit-950 {{ 'underline decoration-2' if choisi }}">{{ option.text }}</mark>{% elif choisi %}<span class="rounded px-0.5 line-through decoration-red-700 dark:decoration-red-300">{{ option.text }}</span>{% else %}{{ option.text }}{% endif %}{{ ' ' }}
+        {% endfor %}
+      </p>
+    </div>
+    <ul class="mt-3 space-y-1 text-sm">
+      {% for option in question.options if option.is_correct %}
+        <li>{{ '✓' if option.id in selection else '✗ manqué :' }} <mark class="rounded bg-amber-200 px-0.5 text-nuit-950">{{ option.text }}</mark></li>
+      {% endfor %}
+      {% for option in question.options if not option.is_correct and option.id in selection %}
+        <li>✗ pas suspect : <span class="line-through">{{ option.text }}</span></li>
+      {% endfor %}
+    </ul>
+  {% elif question.kind.value == 'order' %}
+    <div class="mt-4 grid gap-4 sm:grid-cols-2">
+      <div>
+        <p class="font-semibold">Ordre attendu</p>
+        <ol class="mt-2 list-decimal space-y-1 pl-6">{% for option in question.options %}<li>{{ option.text }}</li>{% endfor %}</ol>
+      </div>
+      {% if selection %}
+        <div>
+          <p class="font-semibold">Votre ordre</p>
+          {% set par_id = {} %}{% for o in question.options %}{% set _ = par_id.update({o.id: o}) %}{% endfor %}
+          <ol class="mt-2 list-decimal space-y-1 pl-6">
+            {% for option_id in selection %}
+              <li class="{{ 'text-phosphore-800 dark:text-phosphore-300' if question.ordre_attendu[loop.index0] == option_id else 'text-red-700 dark:text-red-300' }}">{{ par_id[option_id].text if option_id in par_id else '?' }}</li>
+            {% endfor %}
+          </ol>
+        </div>
+      {% endif %}
+    </div>
+  {% else %}
+    <ul class="mt-4 space-y-2">
+      {% for option in question.options %}
+        {% set choisie = option.id in selection %}
+        <li class="flex items-start gap-3 rounded-xl border px-4 py-3
+                   {{ 'border-phosphore-700 bg-phosphore-50 dark:border-phosphore-400 dark:bg-nuit-800' if option.is_correct else 'border-slate-200 dark:border-nuit-700' }}">
+          <span aria-hidden="true" class="font-mono">{{ '✓' if option.is_correct else ('✗' if choisie else '·') }}</span>
+          <span>
+            {{ option.text }}
+            {% if option.is_correct %}<span class="ml-1 font-semibold text-phosphore-800 dark:text-phosphore-300">— bonne réponse</span>{% endif %}
+            {% if choisie %}<span class="ml-1 text-sm text-slate-600 dark:text-slate-300">(votre choix)</span>{% endif %}
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endmacro %}

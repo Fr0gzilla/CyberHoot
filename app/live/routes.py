@@ -24,7 +24,7 @@ from app.auth import role_required
 from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
 from app.models import LiveGame, LivePlayer, LiveStatus, Quiz, RoleName
-from app.services import live, play
+from app.services import correction, live, play
 
 bp = Blueprint("live", __name__)
 
@@ -129,9 +129,10 @@ def player(game_id: int) -> str | WResponse:
     if request.method == "POST":
         if not form.validate_on_submit():
             abort(400)
-        choix = [int(v) for v in request.form.getlist("choix") if v.isdigit()][:10]
+        question = live.question_courante(partie)
+        choix = correction.lire(question, request.form) if question else []
         resultat = live.repondre(partie, joueur, request.form.get("position", -1, type=int), choix)
-        if isinstance(resultat, live.RefusReponse):
+        if isinstance(resultat, live.RefusReponse | correction.Refus):
             erreur = resultat.value
         else:
             return redirect(url_for("live.player", game_id=partie.id))
@@ -139,11 +140,13 @@ def player(game_id: int) -> str | WResponse:
     db.session.refresh(joueur)
     reponse = live.reponse_de(partie, joueur, partie.current_index)
     en_train_de_choisir = partie.status is LiveStatus.QUESTION and reponse is None
+    question = live.question_courante(partie)
     return render_template(
         "live/player.html",
         partie=partie,
         joueur=joueur,
-        question=live.question_courante(partie),
+        question=question,
+        options=correction.ordre_affiche(question, joueur.token) if question else [],
         reponse=reponse,
         rafraichir=not en_train_de_choisir,
         rang=live.rang(partie, joueur),
@@ -208,6 +211,8 @@ def host(game_id: int) -> str:
         joueurs=live.joueurs_actifs(partie),
         classement=live.classement(partie, 5 if partie.active else None),
         histogramme=live.histogramme(partie) if question else {},
+        reussite=live.reussite(partie) if question else (0, 0),
+        options=correction.ordre_affiche(question, f"animateur-{partie.id}") if question else [],
         etat=live.etat(partie),
         qr=_qr(partie),
         lien_rejoindre=f"{current_app.config['PUBLIC_URL']}{url_for('live.join')}",

@@ -1,5 +1,5 @@
 {% extends "live/_base.html" %}
-{% from "macros/quiz.html" import FORMES, COULEURS %}
+{% from "macros/reponses.html" import saisie, consigne %}
 {% block title %}{{ joueur.nickname }} · Partie en direct{% endblock %}
 {% block content %}
   <div class="mx-auto max-w-xl" data-direct="joueur" data-etat="{{ url_for('live.state', game_id=partie.id) }}"
@@ -34,19 +34,9 @@
           <input type="hidden" name="position" value="{{ partie.current_index }}">
           <fieldset>
             <legend class="text-xl font-bold">{{ question.text }}</legend>
-            <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ 'Plusieurs réponses : cochez toutes les bonnes puis validez.' if question.multiple else 'Touchez votre réponse puis validez.' }}</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ consigne(question) }}</p>
             {% if erreur %}<p class="champ-erreur mt-2" role="alert">{{ erreur }}</p>{% endif %}
-            <ul class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {% for option in question.options %}
-                <li>
-                  <label class="choix flex min-h-[4.5rem] cursor-pointer items-center gap-3 rounded-2xl px-4 py-3 text-lg font-semibold {{ COULEURS[loop.index0 % 6] }}">
-                    <input type="{{ 'checkbox' if question.multiple else 'radio' }}" name="choix" value="{{ option.id }}" class="h-6 w-6 shrink-0">
-                    <span aria-hidden="true" class="text-2xl">{{ FORMES[loop.index0 % 6] }}</span>
-                    <span>{{ option.text }}</span>
-                  </label>
-                </li>
-              {% endfor %}
-            </ul>
+            {{ saisie(question, options, grand=True) }}
           </fieldset>
           <button type="submit" class="bouton-principal mt-5 w-full text-lg" {{ 'disabled' if partie.status.value == 'paused' }}>Valider</button>
         </form>

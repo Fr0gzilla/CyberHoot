@@ -56,6 +56,21 @@ STATUT_LIBELLES = {
 }
 
 
+class QuestionKind(enum.StrEnum):
+    CHOICE = "choice"  # choix unique ou multiple (selon le nombre de bonnes réponses)
+    TRUE_FALSE = "true_false"  # vrai ou faux
+    PHISHING = "phishing"  # repérer les indices suspects d'un faux message
+    ORDER = "order"  # remettre des étapes dans l'ordre
+
+
+TYPE_LIBELLES = {
+    QuestionKind.CHOICE: "Choix (une ou plusieurs bonnes réponses)",
+    QuestionKind.TRUE_FALSE: "Vrai ou faux",
+    QuestionKind.PHISHING: "Repérer le phishing",
+    QuestionKind.ORDER: "Remettre dans l'ordre",
+}
+
+
 class MediaStatus(enum.StrEnum):
     PENDING = "pending"
     CLEAN = "clean"
@@ -154,8 +169,14 @@ class Question(db.Model):  # type: ignore[name-defined,misc]
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     quiz_id: Mapped[int] = mapped_column(ForeignKey("quiz.id", ondelete="CASCADE"), nullable=False)
     position: Mapped[int] = mapped_column(Integer, nullable=False)
+    kind: Mapped[QuestionKind] = mapped_column(
+        _enum(QuestionKind, "question_kind"), nullable=False, default=QuestionKind.CHOICE
+    )
     text: Mapped[str] = mapped_column(String(500), nullable=False)
     explanation: Mapped[str] = mapped_column(Text, nullable=False)
+    # Données propres au type : pour « phishing », l'en-tête du faux message
+    # (canal, expéditeur, objet). Les morceaux du message sont les réponses proposées.
+    payload: Mapped[dict[str, str] | None] = mapped_column(JSON, nullable=True)
     media_id: Mapped[int | None] = mapped_column(
         ForeignKey("media.id", ondelete="SET NULL"), nullable=True
     )
@@ -177,8 +198,15 @@ class Question(db.Model):  # type: ignore[name-defined,misc]
 
     @property
     def multiple(self) -> bool:
-        """Plusieurs bonnes réponses : le joueur coche des cases au lieu d'un seul choix."""
-        return len(self.correct_ids) > 1
+        """Plusieurs réponses à cocher (et non un seul choix)."""
+        if self.kind is QuestionKind.PHISHING:
+            return True
+        return self.kind is QuestionKind.CHOICE and len(self.correct_ids) > 1
+
+    @property
+    def ordre_attendu(self) -> list[int]:
+        """Pour « remettre dans l'ordre » : identifiants dans l'ordre correct (positions)."""
+        return [option.id for option in self.options]
 
 
 class AnswerOption(db.Model):  # type: ignore[name-defined,misc]
@@ -279,3 +307,48 @@ class Review(db.Model):  # type: ignore[name-defined,misc]
     )
 
     user: Mapped[User] = relationship()
+
+
+class BadgeRule(enum.StrEnum):
+    PARTIES = "parties"  # nombre de parties terminées ≥ seuil
+    SANS_FAUTE = "sans_faute"  # une partie sans faute (au moins `seuil` questions)
+    ZERO = "zero"  # une partie à zéro (au moins `seuil` questions)
+    SERIE = "serie"  # jours consécutifs avec une partie terminée ≥ seuil
+    EXPERT = "expert"  # ≥ 80 % de réussite sur au moins `seuil` réponses d'une catégorie
+    ANIMATEUR = "animateur"  # parties en direct animées (au moins 3 joueurs) ≥ seuil
+    VAINQUEUR = "vainqueur"  # première place en direct (au moins 3 joueurs) ≥ seuil
+    CREATEUR = "createur"  # quiz publiés ≥ seuil
+
+
+class Badge(db.Model):  # type: ignore[name-defined,misc]
+    """Badge : défini une seule fois, comme donnée de référence (migrations)."""
+
+    __tablename__ = "badge"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(String(40), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(80), nullable=False)
+    description: Mapped[str] = mapped_column(String(255), nullable=False)
+    icon: Mapped[str] = mapped_column(String(8), nullable=False)
+    rule: Mapped[BadgeRule] = mapped_column(_enum(BadgeRule, "badge_rule"), nullable=False)
+    threshold: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    category_id: Mapped[int | None] = mapped_column(
+        ForeignKey("category.id", ondelete="CASCADE"), nullable=True
+    )
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    category: Mapped[Category | None] = relationship(lazy="joined")
+
+
+class UserBadge(db.Model):  # type: ignore[name-defined,misc]
+    __tablename__ = "user_badge"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
+    )
+    badge_id: Mapped[int] = mapped_column(
+        ForeignKey("badge.id", ondelete="CASCADE"), primary_key=True
+    )
+    obtained_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
+
+    badge: Mapped[Badge] = relationship(lazy="joined")

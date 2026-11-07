@@ -71,6 +71,10 @@
   }
   /* Réponse choisie : bien visible, au clavier comme à la souris. */
   .choix:has(input:checked) { @apply outline outline-4 outline-offset-2 outline-slate-900 dark:outline-white; }
+  /* Faux message (phishing) : chaque passage se coche en le touchant. */
+  .indice { @apply underline decoration-slate-400 decoration-dotted underline-offset-4 hover:bg-amber-100 dark:hover:bg-nuit-700; }
+  .indice:has(input:checked) { @apply bg-amber-300 text-nuit-950 decoration-red-700 decoration-solid decoration-2; }
+  .indice:focus-within { @apply outline outline-[3px] outline-offset-1 outline-phosphore-600 dark:outline-phosphore-300; }
   .choix:focus-within { @apply outline outline-[3px] outline-offset-2 outline-phosphore-600 dark:outline-phosphore-300; }
 }
 

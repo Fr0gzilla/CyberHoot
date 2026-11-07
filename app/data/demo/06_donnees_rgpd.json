@@ -1,0 +1,107 @@
+{
+  "title": "Vos données personnelles et vos droits",
+  "description": "RGPD, CNIL, réseaux sociaux, permissions des applications, traces laissées en ligne : dix questions pour garder la main sur vos données.",
+  "category": "donnees-rgpd",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "text": "Qu'est-ce que le RGPD ?",
+      "explanation": "Le Règlement général sur la protection des données est un texte européen applicable depuis le 25 mai 2018. Il encadre la façon dont les organismes (entreprises, administrations, associations) collectent et utilisent vos données personnelles, et vous donne des droits pour les contrôler. En France, c'est la CNIL qui veille à son respect.",
+      "options": [
+        {"text": "Un règlement européen qui protège vos données personnelles", "correct": true},
+        {"text": "Un antivirus fourni par l'État"},
+        {"text": "Une loi qui interdit les réseaux sociaux aux mineurs"}
+      ]
+    },
+    {
+      "text": "Quels droits le RGPD vous donne-t-il sur vos données ? (plusieurs réponses)",
+      "explanation": "Vous pouvez notamment demander à un organisme quelles données il détient sur vous (droit d'accès), faire corriger des informations fausses (droit de rectification) et, dans certains cas, les faire supprimer (droit à l'effacement) ou les récupérer pour les transférer ailleurs (droit à la portabilité). Le RGPD ne donne en revanche aucun droit sur les données des autres personnes. La CNIL propose des modèles de courrier sur cnil.fr.",
+      "options": [
+        {"text": "Savoir quelles données un organisme détient sur vous", "correct": true},
+        {"text": "Faire corriger des données inexactes", "correct": true},
+        {"text": "Demander, dans certains cas, la suppression de vos données", "correct": true},
+        {"text": "Consulter les données personnelles de vos voisins"}
+      ]
+    },
+    {
+      "kind": "order",
+      "text": "Vous voulez savoir quelles données une boutique en ligne conserve sur vous. Remettez les étapes dans l'ordre.",
+      "explanation": "On adresse d'abord sa demande d'accès à l'organisme, idéalement à son délégué à la protection des données (DPO) quand il en a un : ses coordonnées figurent en général dans la politique de confidentialité. L'organisme doit répondre en principe dans un délai d'un mois, qui peut être prolongé dans certains cas. Sans réponse ou en cas de réponse insatisfaisante, vous pouvez adresser une plainte à la CNIL sur cnil.fr.",
+      "options": [
+        {"text": "Trouver les coordonnées du responsable dans la politique de confidentialité"},
+        {"text": "Envoyer une demande d'accès à vos données"},
+        {"text": "Attendre la réponse, en principe sous un mois"},
+        {"text": "Sans réponse satisfaisante, déposer une plainte auprès de la CNIL"}
+      ]
+    },
+    {
+      "kind": "true_false",
+      "text": "La navigation privée empêche votre fournisseur d'accès, votre employeur et les sites visités de savoir ce que vous faites.",
+      "explanation": "Faux. La navigation privée efface seulement les traces sur l'appareil lui-même (historique, cookies, formulaires) à la fermeture de la fenêtre. Les sites visités, votre fournisseur d'accès et le gestionnaire du réseau (au travail ou au lycée) peuvent toujours voir votre activité. Elle reste utile sur un ordinateur partagé.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "text": "Une application « lampe torche » demande l'accès à vos contacts, à votre micro et à votre position. Que faites-vous ?",
+      "explanation": "Une lampe torche n'a besoin d'aucune de ces autorisations : ces données peuvent être revendues ou utilisées à votre insu. Refusez les permissions sans rapport avec la fonction de l'application, ou choisissez-en une autre. Pensez aussi à passer en revue de temps en temps les permissions accordées dans les réglages de votre téléphone.",
+      "options": [
+        {"text": "J'accepte tout, sinon elle ne fonctionnera pas"},
+        {"text": "Je refuse ces permissions ou je choisis une autre application", "correct": true},
+        {"text": "J'accepte, puisque l'application est gratuite"}
+      ]
+    },
+    {
+      "text": "Une photo prise avec un smartphone peut contenir des informations invisibles à l'œil nu. Lesquelles, par exemple ?",
+      "explanation": "Les photos embarquent des « métadonnées » : date et heure, modèle de l'appareil et, si la localisation est activée pour l'appareil photo, les coordonnées GPS du lieu de prise de vue. Certaines plateformes les suppriment à la publication, mais pas toutes, ni lors d'un envoi en fichier. Vous pouvez désactiver la localisation de l'appareil photo dans les réglages.",
+      "options": [
+        {"text": "La date, le modèle du téléphone et parfois la position GPS", "correct": true},
+        {"text": "Votre mot de passe de messagerie"},
+        {"text": "Votre numéro de carte bancaire"}
+      ]
+    },
+    {
+      "kind": "phishing",
+      "text": "Repérez les indices suspects de ce message. (plusieurs réponses)",
+      "explanation": "Le début paraît sérieux : les services en ligne informent bien leurs utilisateurs quand leurs conditions changent. Mais aucun réseau social ne vous demande d'envoyer par e-mail une copie de votre pièce d'identité, encore moins votre mot de passe. La menace de supprimer vos photos sous 48 heures sert à vous faire céder. Ces documents permettraient d'usurper votre identité. Ne répondez pas et vérifiez les éventuelles notifications directement dans l'application.",
+      "message": {"canal": "email", "expediteur": "Service Conformité <conformite@amiconnect-verification.net>", "objet": "Action requise : vérification de votre compte AmiConnect"},
+      "options": [
+        {"text": "Bonjour,"},
+        {"text": "conformément au règlement européen sur la protection des données, nous mettons à jour nos conditions d'utilisation."},
+        {"text": "Pour conserver votre compte, envoyez-nous sous 48 heures une photo recto verso de votre pièce d'identité", "correct": true},
+        {"text": "ainsi que votre mot de passe actuel, afin de vérifier que vous êtes bien le titulaire.", "correct": true},
+        {"text": "Faute de réponse, votre compte et toutes vos photos seront définitivement supprimés.", "correct": true},
+        {"text": "L'équipe AmiConnect"}
+      ]
+    },
+    {
+      "text": "Une ancienne information vous concernant apparaît dans les résultats d'un moteur de recherche quand on tape votre nom. Quel droit pouvez-vous invoquer pour demander qu'elle n'y apparaisse plus ?",
+      "explanation": "Le droit au déréférencement permet de demander à un moteur de recherche de ne plus afficher certains résultats associés à votre nom. La page d'origine n'est pas supprimée pour autant : pour cela, il faut s'adresser au site qui la publie. Les moteurs proposent un formulaire dédié ; en cas de refus, vous pouvez saisir la CNIL.",
+      "options": [
+        {"text": "Le droit au déréférencement", "correct": true},
+        {"text": "Le droit de réponse à la télévision"},
+        {"text": "Le droit de propriété intellectuelle"}
+      ]
+    },
+    {
+      "text": "Quelles informations vaut-il mieux éviter de publier en public sur un réseau social ? (plusieurs réponses)",
+      "explanation": "Annoncer en direct que vous partez deux semaines signale que votre logement est vide. Une carte d'embarquement contient un code-barres qui peut donner accès à votre réservation. Votre adresse complète facilite le harcèlement ou l'usurpation d'identité. Une photo de paysage sans information personnelle pose, elle, peu de risque. Pensez aussi à régler la visibilité de vos publications sur « amis » plutôt que « public ».",
+      "options": [
+        {"text": "« Départ ce matin pour deux semaines de vacances ! »", "correct": true},
+        {"text": "Une photo de votre carte d'embarquement", "correct": true},
+        {"text": "Votre adresse postale complète", "correct": true},
+        {"text": "Une photo de coucher de soleil sans information personnelle"}
+      ]
+    },
+    {
+      "text": "Laquelle de ces données fait partie des données dites « sensibles » au sens du RGPD ?",
+      "explanation": "Le RGPD prévoit une protection renforcée pour certaines catégories de données : santé, origine raciale ou ethnique, opinions politiques, convictions religieuses, appartenance syndicale, orientation sexuelle, données génétiques et biométriques. Leur traitement est en principe interdit, sauf exceptions encadrées (consentement explicite, par exemple). Une adresse e-mail est une donnée personnelle, mais pas une donnée sensible.",
+      "options": [
+        {"text": "Des informations sur votre santé", "correct": true},
+        {"text": "Votre adresse e-mail"},
+        {"text": "Le numéro d'une commande en ligne"}
+      ]
+    }
+  ]
+}

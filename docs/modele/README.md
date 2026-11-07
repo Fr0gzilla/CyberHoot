@@ -1,4 +1,4 @@
-# Modèle de données — v2.0 (comptes, quiz, parties en direct)
+# Modèle de données — v2.1 (comptes, quiz, direct, contenu cyber, badges)
 
 La base n'a qu'**une source de vérité** : les modèles SQLAlchemy (`app/models/`) et les migrations
 Alembic (`migrations/versions/`). Le fichier [`schema.sql`](schema.sql) est **généré** depuis les
@@ -34,6 +34,10 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | RG23 | Une bonne réponse rapporte 500 points, plus jusqu'à 500 selon la rapidité (proportionnellement au temps restant) ; une mauvaise réponse ou une absence de réponse, 0. Une pause de l'animateur ne pénalise pas les joueurs. |
 | RG24 | L'animateur peut mettre en pause, passer à la suite, exclure un joueur (retiré du classement), terminer. Une partie sans activité pendant 3 h est terminée automatiquement. |
 | RG25 | À la fin, les joueurs connectés retrouvent la partie dans leur historique ; la partie, ses joueurs et leurs réponses sont effacés 24 h après la fin. |
+| RG26 | Une question a un type : choix (une ou plusieurs bonnes réponses), vrai/faux (exactement « Vrai » et « Faux », une seule juste), phishing (un faux e-mail ou SMS découpé en 2 à 12 passages, dont au moins un suspect et un anodin, avec canal, expéditeur et objet), ou remettre dans l'ordre (3 à 6 étapes, saisies dans l'ordre attendu et présentées mélangées). |
+| RG27 | Une réponse est juste si elle est exactement la bonne : toutes les bonnes réponses et aucune autre (pour le phishing : tous les indices et aucun passage anodin) ; pour un ordre, toutes les étapes à la bonne place. La même règle vaut en solo et en direct. |
+| RG28 | Un badge est défini une seule fois (données de référence) par une règle et un seuil ; un joueur obtient un badge au plus une fois. Les badges sont attribués à la fin d'une partie en solo, à la fin d'une partie en direct (animateur et joueurs connectés) et à la publication d'un quiz. |
+| RG29 | La progression d'un joueur est sa réussite par catégorie (sur toutes ses réponses), son nombre de parties et sa série de jours consécutifs avec au moins une partie terminée. |
 
 ## Dictionnaire des données
 
@@ -70,6 +74,8 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | quiz | rejection_reason | texte (500) | nul possible | Motif du dernier refus |
 | quiz | created_at, updated_at, submitted_at, published_at | date-heure UTC | | Dates du cycle de vie |
 | question | id, quiz_id, position | entiers | (quiz_id, position) unique, cascade | Ordre dans le quiz |
+| question | kind | énumération | `choice`, `true_false`, `phishing`, `order` | Type de question |
+| question | payload | JSON | nul possible | Phishing : canal, expéditeur, objet du faux message |
 | question | text / explanation | texte (500) / texte long | non nuls | Intitulé, explication |
 | question | media_id, media_alt | entier, texte (200) | SET NULL | Image et sa description |
 | answer_option | id, question_id, position, text, is_correct | | (question_id, position) unique, cascade | Réponse proposée |
@@ -95,6 +101,9 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | live_player | score, kicked, joined_at | | | Points cumulés, exclusion |
 | live_answer | id, game_id, player_id, position, question_id | | (player_id, position) unique | Réponse en direct |
 | live_answer | selected_ids, is_correct, points, elapsed_ms, answered_at | JSON, booléen, entiers | | Choix, correction, points, temps de réponse |
+| badge | id, code, name, description, icon | | code unique | Badge (données de référence) |
+| badge | rule, threshold, category_id, position | énumération, entiers | catégorie cascade | Règle d'attribution et seuil |
+| user_badge | user_id, badge_id, obtained_at | | clé primaire composée, cascades | Badge obtenu |
 
 ## Modèle conceptuel (MCD)
 
@@ -118,6 +127,8 @@ erDiagram
     PARTIE_DIRECT ||--o{ JOUEUR_DIRECT : "accueille (0,200) / participe à (1,1)"
     UTILISATEUR |o--o{ JOUEUR_DIRECT : "joue sous (0,n) / compte (0,1)"
     JOUEUR_DIRECT ||--o{ REPONSE_DIRECT : "donne (0,n) / donnée par (1,1)"
+    UTILISATEUR }o--o{ BADGE : "obtient (0,n) / obtenu par (0,n)"
+    CATEGORIE |o--o{ BADGE : "récompense (0,n) / porte sur (0,1)"
     UTILISATEUR {
         string pseudo
         string email
@@ -150,12 +161,14 @@ erDiagram
 - **quiz** (<u>id</u>, #creator_id, #category_id, title, description, difficulty, status,
   rejection_reason, created_at, updated_at, submitted_at, published_at)
 - **media** (<u>id</u>, uid, #owner_id, mime_type, size, sha256, status, scan_detail, created_at, scanned_at)
-- **question** (<u>id</u>, #quiz_id, position, text, explanation, #media_id, media_alt)
+- **question** (<u>id</u>, #quiz_id, position, kind, text, explanation, payload, #media_id, media_alt)
 - **answer_option** (<u>id</u>, #question_id, position, text, is_correct)
 - **play_session** (<u>id</u>, token, #user_id, #quiz_id, question_ids, current_index, score, total,
   started_at, finished_at)
 - **play_answer** (<u>id</u>, #session_id, position, #question_id, selected_ids, is_correct, answered_at)
 - **review** (<u>id</u>, #user_id, #quiz_id, rating, comment, created_at, updated_at)
+- **badge** (<u>id</u>, code, name, description, icon, rule, threshold, #category_id, position)
+- **user_badge** (<u>#user_id</u>, <u>#badge_id</u>, obtained_at)
 - **live_game** (<u>id</u>, pin, #host_id, #quiz_id, status, question_ids, current_index, time_limit,
   max_players, question_started_at, question_deadline, paused_remaining_ms, version, created_at,
   last_activity_at, ended_at)

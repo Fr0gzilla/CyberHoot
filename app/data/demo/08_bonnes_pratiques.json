@@ -1,0 +1,104 @@
+{
+  "title": "Les bons réflexes au quotidien",
+  "description": "Mises à jour, sauvegardes, verrouillage, double authentification, ordinateur partagé : dix gestes simples qui évitent la plupart des ennuis.",
+  "category": "bonnes-pratiques",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "text": "Votre téléphone vous propose une mise à jour du système. Pourquoi vaut-il mieux l'installer rapidement ?",
+      "explanation": "Les mises à jour corrigent des failles de sécurité. Une fois un correctif publié, les attaquants savent où se trouve la faille et ciblent les appareils qui ne l'ont pas encore installé. Activez les mises à jour automatiques sur vos appareils et vos applications : c'est l'un des gestes les plus efficaces recommandés par l'ANSSI et cybermalveillance.gouv.fr.",
+      "options": [
+        {"text": "Elles corrigent des failles de sécurité que des attaquants peuvent exploiter", "correct": true},
+        {"text": "Elles servent seulement à changer l'apparence des menus"},
+        {"text": "Elles sont obligatoires pour garder sa garantie"}
+      ]
+    },
+    {
+      "text": "Que signifie la règle de sauvegarde « 3-2-1 » ?",
+      "explanation": "Trois copies de vos données (l'original et deux sauvegardes), sur au moins deux supports différents (par exemple un disque externe et un service en ligne), dont une conservée hors de chez vous ou hors ligne. Ainsi, une panne, un vol, un incendie ou un rançongiciel ne peut pas tout faire disparaître d'un coup. Pensez aussi à vérifier de temps en temps que vos sauvegardes se restaurent bien.",
+      "options": [
+        {"text": "3 copies des données, sur 2 supports différents, dont 1 hors site", "correct": true},
+        {"text": "3 sauvegardes par jour, pendant 2 semaines, sur 1 seul disque"},
+        {"text": "3 mots de passe, 2 antivirus et 1 pare-feu"}
+      ]
+    },
+    {
+      "kind": "true_false",
+      "text": "Un disque de sauvegarde branché en permanence à l'ordinateur protège efficacement vos fichiers contre un rançongiciel.",
+      "explanation": "Faux. Un rançongiciel chiffre tout ce qui est accessible depuis l'ordinateur infecté, y compris un disque externe branché en permanence ou un dossier réseau. Débranchez le disque une fois la sauvegarde terminée, et gardez au moins une copie hors ligne ou hors site.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "text": "Vous quittez votre poste de travail pour quelques minutes. Quel est le bon réflexe ?",
+      "explanation": "Verrouiller la session ne prend qu'une seconde : touche Windows + L sous Windows, ou Contrôle + Commande + Q sur Mac. Sans cela, n'importe qui de passage peut lire vos messages, envoyer un e-mail en votre nom ou brancher une clé USB. Réglez aussi un verrouillage automatique après quelques minutes d'inactivité.",
+      "options": [
+        {"text": "Laisser la session ouverte, ce n'est que pour quelques minutes"},
+        {"text": "Éteindre seulement l'écran"},
+        {"text": "Verrouiller la session (Windows + L, ou Contrôle + Commande + Q sur Mac)", "correct": true}
+      ]
+    },
+    {
+      "kind": "order",
+      "text": "Vous consultez votre messagerie sur un ordinateur de médiathèque. Remettez les étapes dans l'ordre.",
+      "explanation": "La navigation privée évite que le navigateur garde votre historique et vos cookies. Ne cochez pas « Se souvenir de moi », puis déconnectez-vous explicitement de votre compte avant de fermer la fenêtre : fermer l'onglet ne suffit pas toujours. Enfin, fermez la session de l'ordinateur si vous en aviez ouvert une. Évitez les opérations sensibles (banque) sur un poste que vous ne maîtrisez pas.",
+      "options": [
+        {"text": "Ouvrir une fenêtre de navigation privée"},
+        {"text": "Se connecter sans cocher « Se souvenir de moi »"},
+        {"text": "Se déconnecter de son compte"},
+        {"text": "Fermer la fenêtre de navigation privée"},
+        {"text": "Fermer la session de l'ordinateur"}
+      ]
+    },
+    {
+      "text": "Sur quels comptes est-il le plus important d'activer la double authentification ? (plusieurs réponses)",
+      "explanation": "Votre messagerie principale est prioritaire : c'est elle qui reçoit les liens de réinitialisation de tous vos autres mots de passe. Viennent ensuite les comptes bancaires et de paiement, puis les réseaux sociaux, souvent piratés pour arnaquer vos contacts. Un bon mot de passe ne suffit pas, car il peut fuiter lors du piratage d'un site.",
+      "options": [
+        {"text": "Votre messagerie principale", "correct": true},
+        {"text": "Vos comptes bancaires et de paiement", "correct": true},
+        {"text": "Vos réseaux sociaux", "correct": true},
+        {"text": "Aucun : un bon mot de passe suffit"}
+      ]
+    },
+    {
+      "text": "Vous revendez votre ancien smartphone. Que faites-vous avant de le donner ?",
+      "explanation": "Sauvegardez d'abord ce que vous voulez garder, puis déconnectez-vous de vos comptes (sur certains téléphones, cela désactive aussi la protection antivol liée au compte, qui bloquerait l'acheteur). Terminez par une réinitialisation aux paramètres d'usine, qui efface les données. Retirez aussi la carte SIM et la carte mémoire.",
+      "options": [
+        {"text": "Je supprime seulement mes photos"},
+        {"text": "Je sauvegarde mes données, je me déconnecte de mes comptes puis je le réinitialise aux paramètres d'usine", "correct": true},
+        {"text": "Rien, l'acheteur s'en chargera"}
+      ]
+    },
+    {
+      "text": "Pourquoi est-il conseillé d'utiliser au quotidien un compte utilisateur sans droits d'administrateur sur son ordinateur ?",
+      "explanation": "Un compte administrateur peut installer des logiciels et modifier tout le système. Si un logiciel malveillant s'exécute depuis un compte standard, il dispose de beaucoup moins de pouvoir. Gardez le compte administrateur pour les installations et les réglages, et utilisez un compte standard le reste du temps.",
+      "options": [
+        {"text": "Pour qu'un logiciel malveillant éventuel ait moins de pouvoir sur le système", "correct": true},
+        {"text": "Pour que l'ordinateur démarre plus vite"},
+        {"text": "Parce qu'un compte administrateur ne peut pas aller sur Internet"}
+      ]
+    },
+    {
+      "text": "Vous êtes victime d'une arnaque en ligne ou d'un piratage. Vers quel dispositif officiel pouvez-vous vous tourner pour être conseillé et orienté ?",
+      "explanation": "17Cyber est le dispositif public d'assistance aux victimes de cybermalveillance, accessible depuis cybermalveillance.gouv.fr. Il aide à identifier ce qui se passe, donne les premiers conseils et oriente vers les bons interlocuteurs (dépôt de plainte, professionnels de proximité). Le 33700 sert, lui, à signaler les SMS et appels indésirables, pas à accompagner les victimes. N'appelez jamais un numéro fourni dans un message suspect.",
+      "options": [
+        {"text": "17Cyber, via cybermalveillance.gouv.fr", "correct": true},
+        {"text": "Le numéro indiqué dans le message suspect"},
+        {"text": "Un forum anonyme"},
+        {"text": "Le 33700"}
+      ]
+    },
+    {
+      "text": "Quel verrouillage protège le mieux votre smartphone ?",
+      "explanation": "Un code d'au moins six chiffres, éventuellement complété par l'empreinte ou la reconnaissance faciale pour le confort, protège bien mieux qu'un code évident ou un schéma simple, que l'on devine en observant les traces de doigts sur l'écran ou par-dessus votre épaule. Un téléphone donne accès à votre messagerie, vos photos et souvent à votre banque : il mérite un vrai verrou.",
+      "options": [
+        {"text": "Aucun, c'est plus pratique"},
+        {"text": "Un schéma simple en forme de L"},
+        {"text": "Le code 0000"},
+        {"text": "Un code d'au moins six chiffres, avec ou sans biométrie", "correct": true}
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "title": "Repérer un message d'hameçonnage",
-  "description": "SMS de colis, faux e-mails de banque, appels pressants : six situations du quotidien pour apprendre à reconnaître une tentative d'arnaque.",
+  "description": "SMS de colis, faux e-mails de banque, appels pressants : dix situations du quotidien pour apprendre à reconnaître une tentative d'arnaque.",
   "category": "hameconnage",
   "difficulty": "easy",
   "questions": [
@@ -34,6 +34,7 @@
       ]
     },
     {
+      "kind": "true_false",
       "text": "Le cadenas affiché dans la barre d'adresse garantit que le site est légitime.",
       "explanation": "Faux. Le cadenas (HTTPS) garantit seulement que la connexion est chiffrée entre vous et le site. Un site d'escroquerie peut tout à fait obtenir un certificat gratuit et afficher le cadenas.",
       "options": [
@@ -57,6 +58,51 @@
         {"text": "Attendre de voir si quelque chose se passe"},
         {"text": "Changer tout de suite ce mot de passe, partout où il était utilisé", "correct": true},
         {"text": "Supprimer l'e-mail pour effacer les traces"}
+      ]
+    },
+    {
+      "kind": "phishing",
+      "text": "Repérez les indices suspects de ce message. (plusieurs réponses)",
+      "explanation": "Quatre signaux d'alerte : la formule d'appel impersonnelle (votre banque connaît votre nom), la menace d'une suspension sous 24 heures pour vous empêcher de réfléchir, la demande de mot de passe et de code SMS (aucune banque ne les demande, ni par e-mail ni par téléphone) et l'adresse du lien, dont le vrai domaine est « verif-client.top ». Notez aussi l'adresse de l'expéditeur, qui n'est pas celle de la banque. Le bon réflexe : ne cliquez pas et connectez-vous à votre espace en tapant vous-même l'adresse habituelle, ou appelez votre conseiller. Plus de conseils sur cybermalveillance.gouv.fr.",
+      "message": {"canal": "email", "expediteur": "Banque Horizon <alerte@banque-horizon-securite.info>", "objet": "URGENT : activité inhabituelle sur votre compte"},
+      "options": [
+        {"text": "Cher(e) client(e),", "correct": true},
+        {"text": "nous avons détecté une connexion inhabituelle à votre espace en ligne depuis un appareil inconnu."},
+        {"text": "Sans action de votre part dans les 24 heures, votre compte sera définitivement suspendu.", "correct": true},
+        {"text": "Pour le débloquer, confirmez votre identifiant, votre mot de passe et le code reçu par SMS sur la page suivante : banque-horizon.verif-client.top", "correct": true},
+        {"text": "Nous vous remercions de votre confiance."},
+        {"text": "Le service sécurité de Banque Horizon"}
+      ]
+    },
+    {
+      "kind": "phishing",
+      "text": "Repérez les indices suspects de ce SMS. (plusieurs réponses)",
+      "explanation": "Le message vient d'un numéro de portable ordinaire, met la pression avec un délai très court et une majoration démesurée, et renvoie vers un site au nom fantaisiste. Les avis de contravention se vérifient et se paient sur le site officiel de l'administration, en tapant vous-même son adresse, jamais via un lien reçu par SMS. Ne cliquez pas, supprimez le message et transférez-le gratuitement au 33700.",
+      "message": {"canal": "sms", "expediteur": "07 00 00 00 00", "objet": ""},
+      "options": [
+        {"text": "Bonjour,"},
+        {"text": "votre dossier de stationnement n° 48-2271 reste impayé."},
+        {"text": "Réglez 35 € avant ce soir minuit pour éviter une majoration à 375 €.", "correct": true},
+        {"text": "Paiement sécurisé : amendes-reglement-rapide.site/payer", "correct": true},
+        {"text": "Ne répondez pas à ce message."}
+      ]
+    },
+    {
+      "text": "Sur un horodateur, un autocollant avec un QR code vous invite à payer votre stationnement en le scannant. Quelle est la meilleure attitude ?",
+      "explanation": "Des escrocs collent de faux QR codes par-dessus les vrais pour rediriger vers une page de paiement piégée : on parle parfois de « quishing ». Un QR code n'est qu'un lien déguisé, dont on ne voit pas l'adresse avant de le scanner. Vérifiez qu'il ne s'agit pas d'un autocollant ajouté, lisez l'adresse qui s'affiche avant de l'ouvrir et préférez payer directement à la borne ou avec l'application officielle indiquée par la commune.",
+      "options": [
+        {"text": "Je scanne et je paie, c'est plus rapide"},
+        {"text": "Je vérifie que ce n'est pas un autocollant ajouté et je paie à la borne ou via l'application officielle", "correct": true},
+        {"text": "Je scanne, mais je ne saisis que la moitié de mon numéro de carte"}
+      ]
+    },
+    {
+      "text": "Un e-mail semblant venir de votre directrice vous demande un virement urgent et confidentiel vers un nouveau fournisseur, en insistant pour que vous n'en parliez à personne. Que faites-vous ?",
+      "explanation": "C'est la « fraude au président » : l'escroc usurpe l'identité d'un dirigeant et joue sur l'urgence, l'autorité et le secret pour faire contourner les procédures. Vérifiez toujours par un autre canal, par exemple en appelant la personne au numéro que vous connaissez déjà (pas celui indiqué dans le message), et respectez la procédure de validation des paiements de votre structure.",
+      "options": [
+        {"text": "J'effectue le virement, c'est une demande de la direction"},
+        {"text": "Je réponds à l'e-mail pour demander confirmation"},
+        {"text": "Je vérifie en appelant ma directrice au numéro que je connais déjà et je suis la procédure habituelle", "correct": true}
       ]
     }
   ]

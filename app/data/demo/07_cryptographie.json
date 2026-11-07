@@ -1,0 +1,103 @@
+{
+  "title": "La cryptographie sans prise de tête",
+  "description": "Chiffrement symétrique et asymétrique, hachage, certificats, chiffrement de bout en bout, chiffre de César : dix questions pour comprendre comment on protège un secret.",
+  "category": "cryptographie",
+  "difficulty": "medium",
+  "questions": [
+    {
+      "text": "Dans un chiffrement symétrique, comment fonctionnent les clés ?",
+      "explanation": "« Symétrique » signifie que la même clé sert à chiffrer et à déchiffrer, comme la clé d'un cadenas que l'on ouvre et ferme avec le même objet. C'est rapide et très utilisé (l'algorithme AES, par exemple), mais il faut réussir à partager cette clé secrète sans qu'elle soit interceptée.",
+      "options": [
+        {"text": "La même clé secrète sert à chiffrer et à déchiffrer", "correct": true},
+        {"text": "Une clé publique chiffre, une clé privée déchiffre"},
+        {"text": "Il n'y a pas de clé, seulement un mot de passe affiché à l'écran"}
+      ]
+    },
+    {
+      "text": "Alice veut envoyer à Bob un message que lui seul pourra lire, grâce au chiffrement asymétrique. Avec quelle clé doit-elle le chiffrer ?",
+      "explanation": "En chiffrement asymétrique, chacun possède une paire de clés : une clé publique, que tout le monde peut connaître, et une clé privée, gardée secrète. Ce qui est chiffré avec la clé publique de Bob ne peut être déchiffré qu'avec la clé privée de Bob. Alice utilise donc la clé publique de Bob ; elle n'a jamais besoin de connaître sa clé privée.",
+      "options": [
+        {"text": "Avec sa propre clé privée"},
+        {"text": "Avec la clé publique de Bob", "correct": true},
+        {"text": "Avec la clé privée de Bob"},
+        {"text": "Avec sa propre clé publique"}
+      ]
+    },
+    {
+      "kind": "order",
+      "text": "Vous ouvrez un site en HTTPS. Remettez dans l'ordre, de façon simplifiée, ce qui se passe avant que vos échanges soient protégés.",
+      "explanation": "Le navigateur contacte le serveur, qui présente son certificat. Le navigateur vérifie que ce certificat est valide, qu'il correspond bien au nom du site et qu'il a été signé par une autorité de certification reconnue. Les deux parties s'accordent ensuite, grâce à la cryptographie asymétrique, sur une clé de session secrète. La suite des échanges est chiffrée de façon symétrique avec cette clé, beaucoup plus rapide. C'est ce mélange des deux techniques qu'on appelle un chiffrement hybride.",
+      "options": [
+        {"text": "Le navigateur contacte le serveur du site"},
+        {"text": "Le serveur présente son certificat"},
+        {"text": "Le navigateur vérifie le certificat"},
+        {"text": "Les deux parties s'accordent sur une clé de session secrète"},
+        {"text": "Les échanges sont chiffrés avec cette clé de session"}
+      ]
+    },
+    {
+      "text": "Avec le chiffre de César et un décalage de 3 lettres vers la droite (A devient D), comment s'écrit le mot « CHAT » ?",
+      "explanation": "Chaque lettre avance de trois rangs dans l'alphabet : C devient F, H devient K, A devient D et T devient W. On obtient « FKDW ». « ZEXQ » correspond à un décalage de 3 vers la gauche, et « DIBU » à un décalage d'une seule lettre.",
+      "options": [
+        {"text": "FKDW", "correct": true},
+        {"text": "ZEXQ"},
+        {"text": "DIBU"},
+        {"text": "TAHC"}
+      ]
+    },
+    {
+      "kind": "true_false",
+      "text": "Le chiffre de César suffirait aujourd'hui à protéger des données sensibles.",
+      "explanation": "Faux. Avec un alphabet de 26 lettres, il n'existe que 25 décalages utiles : on peut tous les essayer à la main en quelques minutes, et un ordinateur le fait instantanément. L'analyse de la fréquence des lettres (le E est la plus courante en français) trahit aussi le décalage. Le chiffre de César est un excellent exemple pédagogique, mais la sécurité actuelle repose sur des algorithmes éprouvés comme AES.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "text": "Quelle propriété caractérise une fonction de hachage cryptographique ?",
+      "explanation": "Une fonction de hachage transforme n'importe quelle donnée en une « empreinte » de taille fixe. Le même texte donne toujours la même empreinte, une infime modification la change complètement, et il est pratiquement impossible de remonter de l'empreinte au texte d'origine. Contrairement au chiffrement, il n'existe pas de clé pour « déhacher ». On s'en sert pour vérifier l'intégrité d'un fichier ou stocker des mots de passe.",
+      "options": [
+        {"text": "On peut retrouver le texte d'origine à partir de l'empreinte avec la bonne clé"},
+        {"text": "Il est pratiquement impossible de retrouver le texte d'origine à partir de l'empreinte", "correct": true},
+        {"text": "Deux textes différents donnent toujours la même empreinte"}
+      ]
+    },
+    {
+      "text": "Un site bien conçu ne conserve pas votre mot de passe tel quel. Que stocke-t-il à la place ?",
+      "explanation": "Le site conserve une empreinte du mot de passe, calculée avec un « sel » (une valeur aléatoire propre à chaque compte) et un algorithme volontairement lent, conçu pour cet usage. À la connexion, il recalcule l'empreinte de ce que vous tapez et compare. En cas de vol de la base, les attaquants n'obtiennent pas directement les mots de passe, et le sel les empêche d'utiliser des tables précalculées. C'est l'une des raisons pour lesquelles un site sérieux ne peut pas vous « renvoyer » votre ancien mot de passe.",
+      "options": [
+        {"text": "Le mot de passe en clair, dans un fichier caché"},
+        {"text": "Le mot de passe chiffré avec le chiffre de César"},
+        {"text": "Une empreinte salée, calculée avec un algorithme lent prévu pour les mots de passe", "correct": true}
+      ]
+    },
+    {
+      "text": "À quoi sert le certificat présenté par un site en HTTPS ?",
+      "explanation": "Le certificat associe une clé publique à un nom de domaine. Il est signé par une autorité de certification que votre navigateur reconnaît, ce qui permet de vérifier que vous parlez bien au serveur de ce domaine et non à un intermédiaire. Attention : il prouve le nom de domaine, pas l'honnêteté du site. Un faux site peut avoir un certificat valide pour son propre domaine trompeur.",
+      "options": [
+        {"text": "À prouver que le site est honnête et sans arnaque"},
+        {"text": "À relier une clé publique au nom de domaine, avec la signature d'une autorité reconnue", "correct": true},
+        {"text": "À accélérer le chargement des pages"}
+      ]
+    },
+    {
+      "text": "Dans une messagerie chiffrée de bout en bout, qui peut lire le contenu de vos messages ?",
+      "explanation": "Avec le chiffrement de bout en bout, les messages sont chiffrés sur l'appareil de l'expéditeur et ne sont déchiffrés que sur celui du destinataire : l'entreprise qui fait fonctionner le service ne peut pas les lire en route. Cette protection ne vaut que si les appareils eux-mêmes sont sûrs : un téléphone déverrouillé ou infecté laisse lire les conversations.",
+      "options": [
+        {"text": "Uniquement l'expéditeur et le ou les destinataires", "correct": true},
+        {"text": "L'expéditeur, les destinataires et l'entreprise qui gère la messagerie"},
+        {"text": "Toute personne connectée au même Wi-Fi"}
+      ]
+    },
+    {
+      "text": "Vous avez chiffré le disque de votre ordinateur portable, puis perdu à la fois votre mot de passe et la clé de récupération. Que deviennent vos données ?",
+      "explanation": "C'est le revers d'un bon chiffrement : sans la clé, personne ne peut lire les données, pas même vous ni un réparateur. C'est justement ce qui les protège en cas de vol. Conservez donc la clé de récupération proposée au moment de l'activation (par exemple dans votre gestionnaire de mots de passe ou sur papier, dans un endroit sûr), et faites des sauvegardes régulières.",
+      "options": [
+        {"text": "Un réparateur peut les récupérer facilement"},
+        {"text": "Elles sont pratiquement irrécupérables", "correct": true},
+        {"text": "Il suffit de réinstaller le système pour les retrouver"}
+      ]
+    }
+  ]
+}

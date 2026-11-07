@@ -1,0 +1,106 @@
+{
+  "title": "Naviguer sur le Web sans se faire piéger",
+  "description": "Téléchargements, extensions, faux sites marchands, cookies, fausses alertes : dix situations pour adopter les bons réflexes dans votre navigateur.",
+  "category": "securite-web",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "kind": "true_false",
+      "text": "Tant que votre navigateur fonctionne bien, il est préférable de repousser ses mises à jour.",
+      "explanation": "Faux. Les mises à jour du navigateur corrigent régulièrement des failles de sécurité, dont certaines sont déjà exploitées par des attaquants au moment où le correctif sort. Laissez les mises à jour automatiques activées et redémarrez le navigateur quand il vous le propose. C'est l'une des recommandations de base de l'ANSSI et de cybermalveillance.gouv.fr.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "text": "Vous voulez installer un logiciel gratuit de retouche photo. Où le télécharger ?",
+      "explanation": "Le site officiel de l'éditeur ou le magasin d'applications officiel de votre système sont les sources les plus sûres. Les sites de téléchargement inconnus ajoutent souvent des programmes indésirables à l'installation, et les versions « crackées » de logiciels payants sont un moyen classique de diffuser des logiciels malveillants.",
+      "options": [
+        {"text": "Sur le site officiel de l'éditeur ou le magasin d'applications officiel", "correct": true},
+        {"text": "Sur le premier site de téléchargement venu, avec un gros bouton « Télécharger »"},
+        {"text": "Via un lien partagé dans un commentaire sous une vidéo"},
+        {"text": "En cherchant une version « crackée » de la version payante"}
+      ]
+    },
+    {
+      "text": "Une extension de navigateur qui se présente comme une simple calculatrice demande l'autorisation de « lire et modifier toutes vos données sur tous les sites web ». Que faites-vous ?",
+      "explanation": "Cette permission permet à l'extension de voir tout ce que vous tapez et lisez, y compris sur le site de votre banque. Une calculatrice n'en a aucun besoin. Avant d'installer une extension, vérifiez que les permissions demandées correspondent à son usage, installez-en le moins possible et supprimez celles que vous n'utilisez plus.",
+      "options": [
+        {"text": "J'accepte, toutes les extensions demandent cela"},
+        {"text": "Je refuse et je ne l'installe pas : la permission est sans rapport avec son usage", "correct": true},
+        {"text": "J'accepte, puisqu'elle est proposée dans le magasin officiel"}
+      ]
+    },
+    {
+      "text": "Quels indices doivent vous faire douter d'un site marchand que vous ne connaissez pas ? (plusieurs réponses)",
+      "explanation": "Des prix trop beaux pour être vrais sur des produits récents, l'absence de mentions légales ou de coordonnées de l'entreprise, et un paiement accepté uniquement par virement, carte cadeau ou cryptomonnaie sont des signes typiques de faux sites. Un paiement par carte bancaire avec authentification de votre banque vous laisse au contraire des recours. En cas de doute, cherchez des avis sur le nom du site, depuis une autre source que le site lui-même.",
+      "options": [
+        {"text": "Un téléphone sorti le mois dernier vendu à moins 70 %", "correct": true},
+        {"text": "Aucune mention légale ni adresse de l'entreprise", "correct": true},
+        {"text": "Paiement uniquement par virement ou par carte cadeau", "correct": true},
+        {"text": "Plusieurs moyens de paiement reconnus, dont la carte bancaire"}
+      ]
+    },
+    {
+      "text": "Vous avez l'habitude d'acheter sur la boutique en ligne « librairie-lumen.fr ». Laquelle de ces adresses vous mène bien chez elle ?",
+      "explanation": "Le vrai domaine est la partie qui se termine juste avant la première barre « / ». Dans « librairie-lumen.fr.offres-flash.shop », le domaine est « offres-flash.shop ». « librarie-lumen.fr » contient une faute discrète (il manque un « i ») : c'est le « typosquatting ». Et « librairie-lumen-officiel.com » est un tout autre site. Le bon réflexe : passer par vos favoris ou taper l'adresse vous-même.",
+      "options": [
+        {"text": "www.librairie-lumen.fr/promotions", "correct": true},
+        {"text": "librairie-lumen.fr.offres-flash.shop"},
+        {"text": "www.librarie-lumen.fr"},
+        {"text": "librairie-lumen-officiel.com"}
+      ]
+    },
+    {
+      "text": "Une bannière de cookies affiche un gros bouton « Tout accepter » et cache le refus derrière plusieurs clics. Que prévoient les règles en France ?",
+      "explanation": "Selon la CNIL, refuser les cookies non indispensables (publicité, suivi) doit être aussi simple que les accepter, et le simple fait de continuer à naviguer ou de fermer la bannière ne vaut pas consentement. Vous pouvez donc refuser, et supprimer à tout moment les cookies depuis les réglages de votre navigateur. Plus d'informations sur cnil.fr.",
+      "options": [
+        {"text": "Accepter tous les cookies est obligatoire pour respecter la loi"},
+        {"text": "Fermer la bannière vaut acceptation de tous les cookies"},
+        {"text": "Refuser doit être aussi simple qu'accepter", "correct": true}
+      ]
+    },
+    {
+      "kind": "phishing",
+      "text": "Repérez les indices suspects de ce message. (plusieurs réponses)",
+      "explanation": "Un e-mail ne peut pas « analyser » votre appareil : l'annonce de virus actifs sert uniquement à vous faire peur. Les navigateurs se mettent à jour d'eux-mêmes ou depuis leurs propres réglages, jamais via une pièce jointe en « .exe » ou une « page miroir » au nom fantaisiste. Ce genre de fichier installe en réalité un logiciel malveillant. Les deux phrases générales sur les mises à jour sont, elles, exactes : les escrocs mélangent souvent du vrai et du faux pour paraître crédibles.",
+      "message": {"canal": "email", "expediteur": "Centre de mise à jour <maj@navigateur-update-center.click>", "objet": "Votre navigateur est obsolète : mise à jour obligatoire"},
+      "options": [
+        {"text": "Bonjour,"},
+        {"text": "les mises à jour corrigent régulièrement des failles de sécurité."},
+        {"text": "Notre analyse a détecté que votre navigateur est obsolète et que 3 virus sont actifs sur votre appareil.", "correct": true},
+        {"text": "Téléchargez immédiatement le correctif en pièce jointe : MAJ_Navigateur.exe", "correct": true},
+        {"text": "ou depuis notre page miroir : navigateur-update-center.click/correctif", "correct": true},
+        {"text": "Merci de votre attention."}
+      ]
+    },
+    {
+      "text": "En pleine navigation, une page plein écran affirme que votre ordinateur est bloqué par un virus et vous demande d'appeler immédiatement un « support technique ». Que faites-vous ?",
+      "explanation": "C'est une arnaque au faux support technique : la page n'est qu'un site web qui imite une alerte du système. Le « technicien » cherchera à prendre le contrôle de votre ordinateur et à vous faire payer un faux dépannage. N'appelez pas, fermez l'onglet ou le navigateur (au besoin en forçant sa fermeture ou en redémarrant l'ordinateur). Si vous avez déjà appelé ou payé, cybermalveillance.gouv.fr explique les démarches.",
+      "options": [
+        {"text": "J'appelle le numéro pour faire débloquer mon ordinateur"},
+        {"text": "Je ferme le navigateur, au besoin en forçant sa fermeture, sans appeler", "correct": true},
+        {"text": "Je clique sur « Analyser maintenant » dans la page"}
+      ]
+    },
+    {
+      "text": "Dès votre arrivée sur un site inconnu, une fenêtre vous demande d'autoriser les notifications « pour prouver que vous n'êtes pas un robot ». Que faites-vous ?",
+      "explanation": "Autoriser les notifications ne prouve rien du tout : c'est une ruse pour pouvoir vous envoyer ensuite de fausses alertes de virus ou des publicités piégées, même quand le site est fermé. Refusez. Si vous avez déjà accepté, retirez l'autorisation dans les réglages de notifications du navigateur.",
+      "options": [
+        {"text": "J'autorise, c'est une vérification classique"},
+        {"text": "Je refuse : c'est une technique pour m'envoyer de fausses alertes", "correct": true},
+        {"text": "J'autorise puis je ferme vite l'onglet"}
+      ]
+    },
+    {
+      "text": "Vous cherchez un logiciel dans un moteur de recherche. Le premier résultat porte la mention « Sponsorisé ». Que faut-il garder en tête ?",
+      "explanation": "Un résultat sponsorisé est une publicité achetée. Des escrocs en achètent pour placer de fausses pages de téléchargement en tête des résultats, avec un nom qui imite le vrai logiciel. Vérifiez l'adresse du site avant de cliquer, et allez de préférence directement sur le site officiel de l'éditeur.",
+      "options": [
+        {"text": "C'est forcément le site officiel, puisqu'il apparaît en premier"},
+        {"text": "C'est une publicité que n'importe qui peut acheter, y compris un escroc", "correct": true},
+        {"text": "Le moteur de recherche garantit que ces liens sont sans danger"}
+      ]
+    }
+  ]
+}

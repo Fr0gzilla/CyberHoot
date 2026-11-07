@@ -41,6 +41,7 @@ from app.models import (
     User,
     utcnow,
 )
+from app.services import correction, progression
 
 journal = logging.getLogger(__name__)
 
@@ -285,8 +286,19 @@ def terminer(partie: LiveGame) -> bool:
     ):
         return False
     _enregistrer_resultats(partie)
+    _attribuer_badges(partie)
     journal.info("partie en direct %s terminée", partie.id)
     return True
+
+
+def _attribuer_badges(partie: LiveGame) -> None:
+    comptes = {j.user_id for j in partie.players if j.user_id and not j.kicked}
+    if partie.host_id:
+        comptes.add(partie.host_id)
+    for compte_id in comptes:
+        compte = db.session.get(User, compte_id)
+        if compte is not None:
+            progression.attribuer(compte)
 
 
 def exclure(partie: LiveGame, joueur_id: int) -> bool:
@@ -336,7 +348,6 @@ class RefusReponse(enum.Enum):
     MAUVAISE_QUESTION = "Cette question est terminée."
     DEJA_REPONDU = "Vous avez déjà répondu."
     TROP_TARD = "Temps écoulé !"
-    CHOIX_INVALIDE = "Réponse invalide."
 
 
 def points(juste: bool, ecoule_ms: int, limite_s: int) -> int:
@@ -348,7 +359,7 @@ def points(juste: bool, ecoule_ms: int, limite_s: int) -> int:
 
 def repondre(
     partie: LiveGame, joueur: LivePlayer, position: int, choix: list[int]
-) -> LiveAnswer | RefusReponse:
+) -> LiveAnswer | RefusReponse | correction.Refus:
     actualiser(partie)
     if partie.status is not LiveStatus.QUESTION or partie.question_started_at is None:
         return RefusReponse.PAS_DE_QUESTION
@@ -358,20 +369,20 @@ def repondre(
     if partie.question_deadline is None or maintenant > partie.question_deadline:
         return RefusReponse.TROP_TARD
     question = question_courante(partie)
-    selection = set(choix)
-    if question is None or not selection or not selection <= {o.id for o in question.options}:
-        return RefusReponse.CHOIX_INVALIDE
-    if not question.multiple and len(selection) > 1:
-        return RefusReponse.CHOIX_INVALIDE
+    if question is None:
+        return RefusReponse.PAS_DE_QUESTION
+    verdict = correction.corriger(question, choix)
+    if isinstance(verdict, correction.Refus):
+        return verdict
     ecoule = max(0, _ms(maintenant - partie.question_started_at))
-    juste = selection == question.correct_ids
+    juste = verdict
     gain = points(juste, ecoule, partie.time_limit)
     reponse = LiveAnswer(
         game_id=partie.id,
         player_id=joueur.id,
         position=position,
         question_id=question.id,
-        selected_ids=sorted(selection),
+        selected_ids=correction.a_enregistrer(question, choix),
         is_correct=juste,
         points=gain,
         elapsed_ms=ecoule,
@@ -454,6 +465,17 @@ def histogramme(partie: LiveGame) -> dict[int, int]:
         for option_id in selection:
             compte[option_id] = compte.get(option_id, 0) + 1
     return compte
+
+
+def reussite(partie: LiveGame) -> tuple[int, int]:
+    """Bonnes réponses et réponses reçues pour la question en cours."""
+    lignes = db.session.execute(
+        select(LiveAnswer.is_correct, func.count(LiveAnswer.id))
+        .where(LiveAnswer.game_id == partie.id, LiveAnswer.position == partie.current_index)
+        .group_by(LiveAnswer.is_correct)
+    ).all()
+    par_verdict = {bool(juste): n for juste, n in lignes}
+    return par_verdict.get(True, 0), sum(par_verdict.values())
 
 
 def export_csv(partie: LiveGame) -> str:

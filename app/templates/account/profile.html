@@ -9,7 +9,10 @@
   </p>
 
   <section class="carte mt-8" aria-labelledby="titre-parties">
-    <h2 id="titre-parties">Mes dernières parties</h2>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 id="titre-parties">Mes dernières parties</h2>
+      <a class="bouton-secondaire px-3 py-1.5 text-sm" href="{{ url_for('account.progress') }}">Ma progression et mes badges</a>
+    </div>
     {% if parties %}
       <ul class="mt-4 divide-y divide-slate-200 dark:divide-nuit-700">
         {% for partie in parties %}

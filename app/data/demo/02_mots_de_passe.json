@@ -59,6 +59,46 @@
         {"text": "En vérifiant mon adresse sur un service reconnu de recensement des fuites", "correct": true},
         {"text": "Il n'existe aucun moyen de le savoir"}
       ]
+    },
+    {
+      "kind": "true_false",
+      "text": "Une phrase de passe de cinq mots tirés au hasard peut être plus robuste qu'un mot de passe de 8 caractères mélangeant majuscules, chiffres et symboles.",
+      "explanation": "Vrai. Chaque caractère ajouté multiplie le nombre de combinaisons à essayer : une longue suite de mots choisis au hasard résiste bien mieux à une attaque par force brute qu'un mot de passe court, même compliqué. L'important est que les mots soient vraiment pris au hasard, et non une citation ou une phrase connue.",
+      "options": [
+        {"text": "Vrai", "correct": true},
+        {"text": "Faux"}
+      ]
+    },
+    {
+      "text": "Quelles informations vaut-il mieux éviter dans un mot de passe ? (plusieurs réponses)",
+      "explanation": "Date de naissance, prénom d'un proche, nom de votre animal ou de votre club : ces informations se retrouvent souvent sur les réseaux sociaux et sont les premières essayées par un attaquant qui vous cible. Des mots tirés au hasard, sans lien avec votre vie, sont bien plus sûrs.",
+      "options": [
+        {"text": "Votre date de naissance", "correct": true},
+        {"text": "Le nom de votre animal de compagnie", "correct": true},
+        {"text": "Le nom de votre équipe de sport favorite", "correct": true},
+        {"text": "Des mots tirés au hasard, sans lien avec vous"}
+      ]
+    },
+    {
+      "kind": "order",
+      "text": "Remettez dans l'ordre les étapes pour activer la double authentification avec une application d'authentification.",
+      "explanation": "On commence par les paramètres de sécurité du compte, on choisit l'application d'authentification, on scanne le QR code qui relie l'application au compte, puis on confirme avec un premier code. Dernière étape à ne pas oublier : conserver les codes de secours en lieu sûr (par exemple dans votre gestionnaire de mots de passe), pour ne pas perdre l'accès si vous changez de téléphone.",
+      "options": [
+        {"text": "Ouvrir les paramètres de sécurité du compte"},
+        {"text": "Choisir l'option « application d'authentification »"},
+        {"text": "Scanner le QR code affiché avec l'application"},
+        {"text": "Saisir le code à six chiffres généré pour confirmer"},
+        {"text": "Ranger les codes de secours en lieu sûr"}
+      ]
+    },
+    {
+      "text": "Parmi ces seconds facteurs d'authentification, lequel résiste le mieux à l'hameçonnage ?",
+      "explanation": "Une clé de sécurité physique ou une clé d'accès (passkey) est liée à l'adresse exacte du vrai site : elle refuse de fonctionner sur un faux site, même très ressemblant. Un code reçu par SMS ou affiché dans une application reste utile, mais une victime peut être poussée à le recopier sur une page piégée. Une question secrète, elle, se devine souvent grâce aux réseaux sociaux.",
+      "options": [
+        {"text": "Un code reçu par SMS"},
+        {"text": "Une question secrète (« Nom de votre premier animal ? »)"},
+        {"text": "Une clé de sécurité physique ou une clé d'accès (passkey)", "correct": true}
+      ]
     }
   ]
 }

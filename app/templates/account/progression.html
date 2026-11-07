@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Ma progression{% endblock %}
+{% block content %}
+  <p><a href="{{ url_for('account.profile') }}">← Mon profil</a></p>
+  <h1 class="mt-4">Ma progression</h1>
+  <div class="mt-6 grid gap-6 sm:grid-cols-3">
+    <div class="carte"><p class="text-sm text-slate-600 dark:text-slate-300">Parties terminées</p><p class="mt-1 font-mono text-3xl font-extrabold">{{ parties }}</p></div>
+    <div class="carte"><p class="text-sm text-slate-600 dark:text-slate-300">Série en cours</p><p class="mt-1 font-mono text-3xl font-extrabold">{{ serie }} j</p><p class="text-sm text-slate-600 dark:text-slate-300">record : {{ meilleure_serie }} j</p></div>
+    <div class="carte"><p class="text-sm text-slate-600 dark:text-slate-300">Badges</p><p class="mt-1 font-mono text-3xl font-extrabold">{{ badges|length }} / {{ nb_badges }}</p><p class="text-sm"><a href="{{ url_for('quiz.badges_page') }}">Tous les badges</a></p></div>
+  </div>
+
+  <section class="carte mt-6" aria-labelledby="titre-themes">
+    <h2 id="titre-themes">Réussite par thème</h2>
+    <ul class="mt-4 space-y-4">
+      {% for theme in themes %}
+        <li>
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <span class="flex items-center gap-2 font-semibold">
+              <img src="{{ url_for('static', filename='img/categories/' ~ theme.categorie.slug ~ '.svg') }}" alt="" width="24" height="24">
+              {{ theme.categorie.name }}
+            </span>
+            <span class="font-mono text-sm">
+              {% if theme.pourcentage is not none %}{{ theme.pourcentage }} % · {{ theme.justes }}/{{ theme.reponses }}{% else %}pas encore joué{% endif %}
+            </span>
+          </div>
+          <div class="mt-1 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-nuit-800" aria-hidden="true">
+            <div class="h-2 bg-phosphore-600 dark:bg-phosphore-400 barre-{{ ((theme.pourcentage or 0) / 10)|round|int * 10 }}"></div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  {% if badges %}
+    <section class="carte mt-6" aria-labelledby="titre-badges">
+      <h2 id="titre-badges">Mes badges</h2>
+      <ul class="mt-4 flex flex-wrap gap-3">
+        {% for ub in badges %}
+          <li class="flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1 dark:border-nuit-700" title="{{ ub.badge.description }}">
+            <span aria-hidden="true">{{ ub.badge.icon }}</span> {{ ub.badge.name }}
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+{% endblock %}

@@ -39,6 +39,10 @@ def charger_demo(auteur: User) -> list[str]:
                         quizzes.BrouillonOption(o["text"], o.get("correct", False))
                         for o in q["options"]
                     ],
+                    kind=q.get("kind", "choice"),
+                    canal=q.get("message", {}).get("canal", "email"),
+                    expediteur=q.get("message", {}).get("expediteur", ""),
+                    objet=q.get("message", {}).get("objet", ""),
                 )
                 for q in donnees["questions"]
             ],

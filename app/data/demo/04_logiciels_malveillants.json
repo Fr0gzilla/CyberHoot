@@ -1,0 +1,109 @@
+{
+  "title": "Rançongiciels, chevaux de Troie et compagnie",
+  "description": "Pièces jointes piégées, clés USB inconnues, logiciels « crackés », antivirus : dix questions pour comprendre les logiciels malveillants et savoir réagir.",
+  "category": "logiciels-malveillants",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "text": "Qu'est-ce qu'un rançongiciel ?",
+      "explanation": "Un rançongiciel (ou « ransomware ») chiffre vos fichiers pour les rendre illisibles, puis réclame une rançon, souvent en cryptomonnaie, contre la promesse de les débloquer. Il peut toucher aussi bien un particulier qu'un hôpital ou une entreprise. La meilleure protection reste des sauvegardes régulières, conservées déconnectées.",
+      "options": [
+        {"text": "Un logiciel qui rend vos fichiers illisibles et réclame de l'argent pour les débloquer", "correct": true},
+        {"text": "Un logiciel qui accélère votre ordinateur en échange d'un abonnement"},
+        {"text": "Un antivirus payant"}
+      ]
+    },
+    {
+      "kind": "true_false",
+      "text": "Payer la rançon garantit de récupérer ses fichiers.",
+      "explanation": "Faux. Rien n'oblige les criminels à tenir parole : la clé fournie peut ne pas fonctionner, ou ne jamais arriver, et payer finance de nouvelles attaques. Les autorités françaises, dont l'ANSSI et cybermalveillance.gouv.fr, recommandent de ne pas payer, de porter plainte et de restaurer ses données à partir de sauvegardes.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "kind": "order",
+      "text": "Un message de rançon s'affiche sur votre ordinateur. Remettez dans l'ordre les bons réflexes.",
+      "explanation": "D'abord, débrancher l'appareil du réseau (câble et Wi-Fi) pour éviter que l'infection ne gagne d'autres machines ou vos sauvegardes. Ensuite, prévenir : le service informatique au travail, ou le dispositif 17Cyber pour un particulier. Puis porter plainte, en conservant les preuves (photo du message de rançon). Ce n'est qu'après que l'on nettoie ou réinstalle l'appareil, avant de restaurer les fichiers depuis une sauvegarde saine.",
+      "options": [
+        {"text": "Débrancher l'appareil d'Internet et du réseau"},
+        {"text": "Prévenir le service informatique ou demander de l'aide via 17Cyber"},
+        {"text": "Porter plainte en conservant les preuves"},
+        {"text": "Faire nettoyer ou réinstaller l'appareil"},
+        {"text": "Restaurer les fichiers depuis une sauvegarde saine"}
+      ]
+    },
+    {
+      "text": "Vous trouvez une clé USB sur le parking de votre lycée ou de votre entreprise. Que faites-vous ?",
+      "explanation": "Une clé USB abandonnée peut être un piège : elle peut contenir un logiciel malveillant qui s'installe dès qu'on ouvre un fichier, voire se faire passer pour un clavier et taper des commandes toute seule. Ne la branchez pas, même « juste pour voir à qui elle appartient ». Remettez-la au service informatique ou à l'accueil.",
+      "options": [
+        {"text": "Je la branche pour retrouver son propriétaire"},
+        {"text": "Je la branche sur un ordinateur du CDI ou de la salle de pause plutôt que sur le mien"},
+        {"text": "Je ne la branche pas et je la remets au service informatique ou à l'accueil", "correct": true}
+      ]
+    },
+    {
+      "kind": "phishing",
+      "text": "Repérez les indices suspects de ce message. (plusieurs réponses)",
+      "explanation": "La menace d'un « service contentieux » sous 48 heures vise à vous faire agir vite. Le nom de la pièce jointe cache une double extension : « .pdf.exe » est un programme, pas un document. Enfin, aucun expéditeur honnête ne vous demande de désactiver votre antivirus. Si vous ne connaissez pas ce fournisseur, ne l'ouvrez pas ; si vous le connaissez, vérifiez la facture en le contactant par les coordonnées habituelles.",
+      "message": {"canal": "email", "expediteur": "Comptabilité Fournitures Delta <factures@delta-fournitures-pro.net>", "objet": "Relance : facture impayée n° 2026-1187"},
+      "options": [
+        {"text": "Bonjour,"},
+        {"text": "veuillez trouver ci-joint la facture n° 2026-1187 relative à votre dernière commande."},
+        {"text": "Sans règlement sous 48 heures, le dossier sera transmis à notre service contentieux.", "correct": true},
+        {"text": "Pièce jointe : Facture_2026-1187.pdf.exe", "correct": true},
+        {"text": "Pour l'ouvrir, désactivez temporairement votre antivirus, qui peut le bloquer par erreur.", "correct": true},
+        {"text": "Cordialement, le service comptabilité"}
+      ]
+    },
+    {
+      "text": "Vous installez un jeu gratuit trouvé sur un site inconnu. Il fonctionne, mais il a aussi installé en secret un programme qui permet à un pirate de contrôler votre ordinateur à distance. Comment appelle-t-on ce type de logiciel ?",
+      "explanation": "Comme dans la légende, le cheval de Troie se présente sous une apparence attrayante (un jeu, un utilitaire, une fausse mise à jour) pour faire entrer un programme malveillant. Il peut voler des mots de passe, espionner ou donner le contrôle à distance. D'où l'importance de ne télécharger que depuis des sources officielles.",
+      "options": [
+        {"text": "Un cheval de Troie", "correct": true},
+        {"text": "Un pare-feu"},
+        {"text": "Un correctif de sécurité"},
+        {"text": "Un cookie"}
+      ]
+    },
+    {
+      "text": "Quels signes peuvent laisser penser qu'un appareil est infecté ? (plusieurs réponses)",
+      "explanation": "Des fenêtres publicitaires qui surgissent sans raison, une page d'accueil ou un moteur de recherche modifiés sans votre accord et un ralentissement soudain et inexpliqué sont des signes possibles d'infection. Aucun n'est une preuve à lui seul, mais ils justifient une analyse antivirus et, si besoin, l'aide d'un professionnel. Un écran qui se met en veille comme vous l'avez réglé est, lui, tout à fait normal.",
+      "options": [
+        {"text": "Des fenêtres publicitaires apparaissent sans arrêt", "correct": true},
+        {"text": "La page d'accueil du navigateur a changé sans votre accord", "correct": true},
+        {"text": "L'appareil est devenu très lent du jour au lendemain", "correct": true},
+        {"text": "L'écran se met en veille après le délai que vous avez choisi"}
+      ]
+    },
+    {
+      "text": "Quelle affirmation sur les antivirus est exacte ?",
+      "explanation": "Windows intègre un antivirus (Microsoft Defender) qui offre une bonne protection de base s'il reste activé et à jour. Installer deux antivirus en même temps provoque plutôt des conflits. Et aucun antivirus ne détecte tout : il complète les bons réflexes (mises à jour, prudence avec les pièces jointes, sauvegardes) sans les remplacer.",
+      "options": [
+        {"text": "Un antivirus à jour rend toute autre précaution inutile"},
+        {"text": "Installer deux antivirus en même temps double la protection"},
+        {"text": "Windows intègre déjà un antivirus, qu'il faut garder activé et à jour", "correct": true},
+        {"text": "Un antivirus n'a jamais besoin d'être mis à jour"}
+      ]
+    },
+    {
+      "text": "Un site propose une version « crackée » gratuite d'un logiciel payant. Quel est le principal risque pour votre sécurité ?",
+      "explanation": "Les logiciels piratés sont l'un des moyens préférés pour diffuser des logiciels malveillants : le programme qui « débloque » la licence peut voler vos mots de passe ou installer un cheval de Troie. Ils ne reçoivent pas non plus les mises à jour de sécurité. Sans compter que leur téléchargement est illégal. Préférez la version officielle, ou une alternative gratuite et libre.",
+      "options": [
+        {"text": "Aucun, tant que le logiciel fonctionne"},
+        {"text": "Il peut contenir un logiciel malveillant caché", "correct": true},
+        {"text": "Il risque seulement d'afficher des publicités"}
+      ]
+    },
+    {
+      "text": "Un SMS vous invite à installer une application de suivi de colis à partir d'un fichier à télécharger, en dehors du magasin d'applications officiel. Que faites-vous ?",
+      "explanation": "Installer une application hors du magasin officiel contourne les contrôles de sécurité. Ce type de SMS sert à diffuser des applications espionnes capables de lire vos SMS (y compris les codes de validation bancaire) ou de voler vos identifiants. Ne téléchargez rien, supprimez le message et signalez-le au 33700.",
+      "options": [
+        {"text": "J'installe le fichier, puisque j'attends justement un colis"},
+        {"text": "Je ne télécharge rien, je supprime le SMS et je le signale au 33700", "correct": true},
+        {"text": "J'installe le fichier puis je le désinstalle après réception du colis"}
+      ]
+    }
+  ]
+}

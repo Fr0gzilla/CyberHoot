@@ -14,7 +14,7 @@ from werkzeug.wrappers import Response
 from app.auth import role_required
 from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
-from app.models import DIFFICULTE_LIBELLES, Quiz, QuizStatus, RoleName
+from app.models import DIFFICULTE_LIBELLES, TYPE_LIBELLES, Quiz, QuizStatus, RoleName
 from app.services import catalog, quizzes
 
 bp = Blueprint("creator", __name__)
@@ -92,11 +92,8 @@ def _rendu(
         form=form,
         categories=quizzes.categories(),
         niveaux=DIFFICULTE_LIBELLES,
-        limites={
-            "questions": quizzes.QUESTIONS_MAX,
-            "options_min": quizzes.OPTIONS_MIN,
-            "options_max": quizzes.OPTIONS_MAX,
-        },
+        types=TYPE_LIBELLES,
+        limites={"questions": quizzes.QUESTIONS_MAX},
     )
 
 

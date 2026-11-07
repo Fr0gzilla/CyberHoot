@@ -74,6 +74,17 @@
           </div>
         </div>
 
+        <div class="mt-4 flex flex-wrap items-end gap-3">
+          <div class="min-w-0 flex-1">
+            <label for="q-{{ i }}-kind" class="champ-libelle">Type de question</label>
+            <select id="q-{{ i }}-kind" name="q-{{ i }}-kind" class="champ" {{ invalide('q-' ~ i ~ '-kind') }}>
+              {% for valeur, libelle in types.items() %}<option value="{{ valeur.value }}" {{ 'selected' if q.kind == valeur.value }}>{{ libelle }}</option>{% endfor %}
+            </select>
+          </div>
+          <button type="submit" name="action" value="appliquer-type:{{ i }}" class="bouton-secondaire">Changer le type<span class="sr-only"> de la question {{ i + 1 }}</span></button>
+        </div>
+        {{ erreurs_de('q-' ~ i ~ '-kind') }}
+
         <div class="mt-4">
           <label for="q-{{ i }}-text" class="champ-libelle">Intitulé</label>
           <textarea id="q-{{ i }}-text" name="q-{{ i }}-text" rows="2" class="champ" maxlength="500" {{ invalide('q-' ~ i ~ '-text') }}>{{ q.text }}</textarea>
@@ -97,27 +108,60 @@
           {{ erreurs_de('q-' ~ i ~ '-alt') }}
         </div>
 
+        {% if q.kind == 'phishing' %}
+          <div class="mt-4 grid gap-4 rounded-xl border border-amber-500/50 p-4 md:grid-cols-3">
+            <p class="champ-libelle md:col-span-3">Faux message à analyser</p>
+            <div>
+              <label for="q-{{ i }}-canal" class="champ-libelle">Canal</label>
+              <select id="q-{{ i }}-canal" name="q-{{ i }}-canal" class="champ" {{ invalide('q-' ~ i ~ '-canal') }}>
+                <option value="email" {{ 'selected' if q.canal == 'email' }}>E-mail</option>
+                <option value="sms" {{ 'selected' if q.canal == 'sms' }}>SMS</option>
+              </select>
+              {{ erreurs_de('q-' ~ i ~ '-canal') }}
+            </div>
+            <div>
+              <label for="q-{{ i }}-expediteur" class="champ-libelle">Expéditeur affiché</label>
+              <input id="q-{{ i }}-expediteur" name="q-{{ i }}-expediteur" class="champ" value="{{ q.expediteur }}" maxlength="120" {{ invalide('q-' ~ i ~ '-expediteur') }}>
+              {{ erreurs_de('q-' ~ i ~ '-expediteur') }}
+            </div>
+            <div>
+              <label for="q-{{ i }}-objet" class="champ-libelle">Objet (e-mail)</label>
+              <input id="q-{{ i }}-objet" name="q-{{ i }}-objet" class="champ" value="{{ q.objet }}" maxlength="150">
+            </div>
+          </div>
+        {% endif %}
+
         <fieldset class="mt-4">
-          <legend class="champ-libelle">Réponses proposées <span class="font-normal text-slate-600 dark:text-slate-300">({{ limites.options_min }} à {{ limites.options_max }}, cochez la ou les bonnes)</span></legend>
+          <legend class="champ-libelle">
+            {% if q.kind == 'phishing' %}Passages du message, dans l'ordre <span class="font-normal text-slate-600 dark:text-slate-300">(cochez les passages suspects)</span>
+            {% elif q.kind == 'order' %}Étapes, dans le bon ordre <span class="font-normal text-slate-600 dark:text-slate-300">(elles seront mélangées pour le joueur)</span>
+            {% elif q.kind == 'true_false' %}Réponse <span class="font-normal text-slate-600 dark:text-slate-300">(cochez la bonne)</span>
+            {% else %}Réponses proposées <span class="font-normal text-slate-600 dark:text-slate-300">({{ q.options_min }} à {{ q.options_max }}, cochez la ou les bonnes)</span>{% endif %}
+          </legend>
           {{ erreurs_de('q-' ~ i ~ '-options') }}
           <ul class="space-y-3">
             {% for o in q.options %}
               {% set j = loop.index0 %}
+              {% set nom = 'Passage' if q.kind == 'phishing' else ('Étape' if q.kind == 'order' else 'Réponse') %}
               <li class="flex flex-wrap items-center gap-3">
-                <label for="q-{{ i }}-o-{{ j }}-text" class="sr-only">Réponse {{ j + 1 }}</label>
-                <input id="q-{{ i }}-o-{{ j }}-text" name="q-{{ i }}-o-{{ j }}-text" class="champ min-w-0 flex-1" value="{{ o.text }}" maxlength="300" placeholder="Réponse {{ j + 1 }}" {{ invalide('q-' ~ i ~ '-o-' ~ j ~ '-text') }}>
-                <label class="flex items-center gap-2 whitespace-nowrap">
-                  <input type="checkbox" name="q-{{ i }}-o-{{ j }}-correct" value="1" class="h-5 w-5" {{ 'checked' if o.correct }}> Bonne réponse
-                </label>
-                {% if q.options|length > limites.options_min %}
-                  <button type="submit" name="action" value="retirer-reponse:{{ i }}:{{ j }}" class="bouton-secondaire px-3 py-1.5 text-sm">Retirer<span class="sr-only"> la réponse {{ j + 1 }}</span></button>
+                <label for="q-{{ i }}-o-{{ j }}-text" class="sr-only">{{ nom }} {{ j + 1 }}</label>
+                {% if q.kind == 'order' %}<span class="font-mono" aria-hidden="true">{{ j + 1 }}.</span>{% endif %}
+                <input id="q-{{ i }}-o-{{ j }}-text" name="q-{{ i }}-o-{{ j }}-text" class="champ min-w-0 flex-1" value="{{ o.text }}" maxlength="300"
+                       placeholder="{{ nom }} {{ j + 1 }}" {{ 'readonly' if q.kind == 'true_false' }} {{ invalide('q-' ~ i ~ '-o-' ~ j ~ '-text') }}>
+                {% if q.kind != 'order' %}
+                  <label class="flex items-center gap-2 whitespace-nowrap">
+                    <input type="checkbox" name="q-{{ i }}-o-{{ j }}-correct" value="1" class="h-5 w-5" {{ 'checked' if o.correct }}> {{ 'Suspect' if q.kind == 'phishing' else 'Bonne réponse' }}
+                  </label>
+                {% endif %}
+                {% if q.kind != 'true_false' and q.options|length > q.options_min %}
+                  <button type="submit" name="action" value="retirer-reponse:{{ i }}:{{ j }}" class="bouton-secondaire px-3 py-1.5 text-sm">Retirer<span class="sr-only"> : {{ nom|lower }} {{ j + 1 }}</span></button>
                 {% endif %}
                 {{ erreurs_de('q-' ~ i ~ '-o-' ~ j ~ '-text') }}
               </li>
             {% endfor %}
           </ul>
-          {% if q.options|length < limites.options_max %}
-            <button type="submit" name="action" value="ajouter-reponse:{{ i }}" class="bouton-secondaire mt-3 px-3 py-1.5 text-sm">+ Ajouter une réponse<span class="sr-only"> à la question {{ i + 1 }}</span></button>
+          {% if q.kind != 'true_false' and q.options|length < q.options_max %}
+            <button type="submit" name="action" value="ajouter-reponse:{{ i }}" class="bouton-secondaire mt-3 px-3 py-1.5 text-sm">+ Ajouter {{ 'un passage' if q.kind == 'phishing' else ('une étape' if q.kind == 'order' else 'une réponse') }}<span class="sr-only"> à la question {{ i + 1 }}</span></button>
           {% endif %}
         </fieldset>
 

@@ -1,5 +1,23 @@
 # Journal des versions
 
+## v2.1 — Contenu cyber
+
+- Nouveaux types de questions, en solo comme en direct :
+  - **vrai ou faux** ;
+  - **repérer le phishing** : un faux e-mail ou SMS (expéditeur, objet, texte) dont le joueur
+    touche les passages suspects ; correction surlignée, indices manqués signalés ;
+  - **remettre dans l'ordre** : étapes présentées mélangées (mélange stable pendant la
+    partie), rang à choisir pour chacune.
+- Une seule règle de correction partagée par le solo et le direct (`services/correction.py`).
+- Éditeur : type par question, champs propres au phishing, vrai/faux préparé automatiquement.
+- 18 badges définis une seule fois (migration) : première partie, série de jours, sans faute,
+  « maillon faible », expert de chaque thème, maître de cérémonie, champion de la salle,
+  auteur publié… attribués par un service unique et annoncés au joueur.
+- Progression : réussite par thème, parties jouées, série en cours et record, badges ; page
+  publique des badges.
+- Icônes locales des 8 catégories.
+- 8 quiz de démonstration originaux de 10 questions, avec sources publiques.
+
 ## v2.0 — En direct
 
 - Parties en direct : l'animateur lance un quiz publié et projette un code PIN à 6 chiffres et

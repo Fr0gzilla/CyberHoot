@@ -15,7 +15,7 @@ Refonte complète de Cyber-hoot, projet de groupe réalisé en BTS SIO (dépôt 
 | **v1.0 — Socle sécurisé** | Comptes (inscription avec confirmation par e-mail, connexion, verrouillage, mot de passe oublié, profil, suppression), protections CSRF, CSP stricte, limitation de débit, Docker durci, intégration continue | ✅ |
 | **v1.1 — Quiz solides** | Catalogue (recherche, filtres, notes), parties en solo corrigées côté serveur, éditeur de quiz, validation par un administrateur, images analysées, avis, statistiques | ✅ |
 | **v2.0 — En direct** | Parties en direct : code PIN et QR code, salle d'attente, chrono, points selon la rapidité, histogramme, classement et podium, pause, exclusion, export CSV ; testé avec 200 joueurs ([rapport](docs/charge-v2.0.md)) | ✅ |
-| v2.1 — Contenu cyber | Questions « repérer le phishing », catégories, badges et progression | à venir |
+| **v2.1 — Contenu cyber** | Questions vrai/faux, « repérer le phishing » et « remettre dans l'ordre », 18 badges, progression par thème et séries, 8 quiz de démonstration de 10 questions | ✅ |
 | v2.2 — Administrer | Double authentification, journal d'audit, données personnelles | à venir |
 | v3.0 — Finition | Accessibilité complète, HTTPS, dossier technique | à venir |
 

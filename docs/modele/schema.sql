@@ -290,3 +290,73 @@ CREATE INDEX ix_live_answer_game_id ON live_answer (game_id);
 
 UPDATE alembic_version SET version_num='0003' WHERE alembic_version.version_num = '0002';
 
+-- Running upgrade 0003 -> 0004
+
+CREATE TABLE badge (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    code VARCHAR(40) NOT NULL, 
+    name VARCHAR(80) NOT NULL, 
+    description VARCHAR(255) NOT NULL, 
+    icon VARCHAR(8) NOT NULL, 
+    rule ENUM('parties','sans_faute','zero','serie','expert','animateur','vainqueur','createur') NOT NULL, 
+    threshold INTEGER NOT NULL, 
+    category_id INTEGER, 
+    position INTEGER NOT NULL, 
+    CONSTRAINT pk_badge PRIMARY KEY (id), 
+    CONSTRAINT fk_badge_category_id_category FOREIGN KEY(category_id) REFERENCES category (id) ON DELETE CASCADE, 
+    CONSTRAINT uq_badge_code UNIQUE (code)
+);
+
+CREATE TABLE user_badge (
+    user_id INTEGER NOT NULL, 
+    badge_id INTEGER NOT NULL, 
+    obtained_at DATETIME NOT NULL, 
+    CONSTRAINT pk_user_badge PRIMARY KEY (user_id, badge_id), 
+    CONSTRAINT fk_user_badge_badge_id_badge FOREIGN KEY(badge_id) REFERENCES badge (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_user_badge_user_id_user FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE
+);
+
+ALTER TABLE question ADD COLUMN kind ENUM('choice','true_false','phishing','order') NOT NULL DEFAULT 'choice';
+
+ALTER TABLE question ADD COLUMN payload JSON;
+
+ALTER TABLE question ALTER COLUMN kind DROP DEFAULT;
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (1, 'premiere-partie', 'Premier clic', 'Terminer sa toute première partie.', '🐣', 'parties', 1, NULL, 1);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (2, 'habitue', 'Habitué du quiz', 'Terminer 10 parties.', '🎮', 'parties', 10, NULL, 2);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (3, 'accro', 'Pare-feu humain', 'Terminer 50 parties.', '🧱', 'parties', 50, NULL, 3);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (4, 'zero-faille', 'Zéro faille', 'Réussir sans aucune erreur une partie d''au moins 5 questions.', '🛡️', 'sans_faute', 5, NULL, 4);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (5, 'maillon-faible', 'Maillon faible (pour l''instant)', 'Finir une partie d''au moins 5 questions… sans une seule bonne réponse. Ça arrive aux meilleurs.', '🙈', 'zero', 5, NULL, 5);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (6, 'patch-du-jour', 'Patch du jour', 'Jouer 3 jours de suite.', '📅', 'serie', 3, NULL, 6);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (7, 'mise-a-jour-hebdo', 'Mise à jour hebdomadaire', 'Jouer 7 jours de suite.', '🔁', 'serie', 7, NULL, 7);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (8, 'expert-hameconnage', 'Pêcheur repenti', '80 % de bonnes réponses sur au moins 20 questions d''hameçonnage.', '🎣', 'expert', 20, 1, 8);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (9, 'expert-mots-de-passe', 'Coffre-fort ambulant', '80 % de bonnes réponses sur au moins 20 questions de mots de passe.', '🔐', 'expert', 20, 2, 9);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (10, 'expert-web', 'Gardien du cadenas', '80 % de bonnes réponses sur au moins 20 questions de sécurité web.', '🌐', 'expert', 20, 3, 10);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (11, 'expert-malware', 'Chasseur de rançongiciels', '80 % de bonnes réponses sur au moins 20 questions de logiciels malveillants.', '🦠', 'expert', 20, 4, 11);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (12, 'expert-reseaux', 'Ondes maîtrisées', '80 % de bonnes réponses sur au moins 20 questions de réseaux et Wi-Fi.', '📶', 'expert', 20, 5, 12);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (13, 'expert-rgpd', 'Délégué à la vie privée', '80 % de bonnes réponses sur au moins 20 questions de données personnelles.', '🕵️', 'expert', 20, 6, 13);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (14, 'expert-crypto', 'Casseur de César', '80 % de bonnes réponses sur au moins 20 questions de cryptographie.', '🗝️', 'expert', 20, 7, 14);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (15, 'expert-pratiques', 'Hygiène numérique', '80 % de bonnes réponses sur au moins 20 questions de bonnes pratiques.', '🧼', 'expert', 20, 8, 15);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (16, 'animateur', 'Maître de cérémonie', 'Animer une partie en direct d''au moins 3 joueurs.', '🎤', 'animateur', 1, NULL, 16);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (17, 'vainqueur', 'Champion de la salle', 'Finir premier d''une partie en direct d''au moins 3 joueurs.', '🏆', 'vainqueur', 1, NULL, 17);
+
+INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_id, position) VALUES (18, 'auteur', 'Auteur publié', 'Voir un de ses quiz publié.', '✍️', 'createur', 1, NULL, 18);
+
+UPDATE alembic_version SET version_num='0004' WHERE alembic_version.version_num = '0003';
+

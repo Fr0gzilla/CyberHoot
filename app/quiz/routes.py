@@ -19,7 +19,8 @@ from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
 from app.models import Media, MediaStatus, Question, Quiz, RoleName
 from app.quiz.forms import ReviewForm
-from app.services import catalog, play, quizzes
+from app.services import catalog, play, progression, quizzes
+from app.services import correction as correcteur
 from app.services import media as medias
 
 bp = Blueprint("quiz", __name__)
@@ -117,18 +118,26 @@ def play_page(token: str) -> str | Response:
     if request.method == "POST":
         if not form.validate_on_submit():
             abort(400)
-        choix = [int(v) for v in request.form.getlist("choix") if v.isdigit()][:10]
-        correction = play.repondre(partie, request.form.get("question", type=int) or 0, choix)
-        if correction.reponse is not None:
+        choix = correcteur.lire(question, request.form)
+        corrigee = play.repondre(partie, request.form.get("question", type=int) or 0, choix)
+        if corrigee.reponse is not None:
+            if partie.finished:
+                for badge in progression.attribuer(current_user):
+                    flash(f"Nouveau badge : {badge.icon} {badge.name} !", "success")
             return redirect(
-                url_for("quiz.correction", token=token, position=correction.reponse.position)
+                url_for("quiz.correction", token=token, position=corrigee.reponse.position)
             )
-        erreur = correction.refus.value if correction.refus else None
+        erreur = corrigee.refus.value if corrigee.refus else None
         question = play.question_courante(partie)
         if question is None:
             return redirect(url_for("quiz.result", token=token))
     return render_template(
-        "quiz/play.html", partie=partie, question=question, form=form, erreur=erreur
+        "quiz/play.html",
+        partie=partie,
+        question=question,
+        options=correcteur.ordre_affiche(question, partie.token),
+        form=form,
+        erreur=erreur,
     )
 
 
@@ -181,3 +190,13 @@ def media_file(uid: str) -> Response:
     reponse = send_file(chemin, mimetype=media.mime_type, max_age=3600, conditional=True)
     reponse.headers["Content-Disposition"] = "inline"
     return reponse
+
+
+@bp.get("/badges")
+def badges_page() -> str:
+    possedes: set[int] = set()
+    if current_user.is_authenticated:
+        possedes = {ub.badge_id for ub in progression.badges_de(current_user)}
+    return render_template(
+        "quiz/badges.html", badges=progression.tous_les_badges(), possedes=possedes
+    )

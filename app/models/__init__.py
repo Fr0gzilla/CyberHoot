@@ -5,7 +5,10 @@ from app.models.live import LiveAnswer, LiveGame, LivePlayer, LiveStatus
 from app.models.quiz import (
     DIFFICULTE_LIBELLES,
     STATUT_LIBELLES,
+    TYPE_LIBELLES,
     AnswerOption,
+    Badge,
+    BadgeRule,
     Category,
     Difficulty,
     Media,
@@ -13,16 +16,21 @@ from app.models.quiz import (
     PlayAnswer,
     PlaySession,
     Question,
+    QuestionKind,
     Quiz,
     QuizStatus,
     Review,
+    UserBadge,
 )
 
 __all__ = [
     "DIFFICULTE_LIBELLES",
     "STATUT_LIBELLES",
+    "TYPE_LIBELLES",
     "AccountToken",
     "AnswerOption",
+    "Badge",
+    "BadgeRule",
     "Category",
     "Difficulty",
     "LiveAnswer",
@@ -34,6 +42,7 @@ __all__ = [
     "PlayAnswer",
     "PlaySession",
     "Question",
+    "QuestionKind",
     "Quiz",
     "QuizStatus",
     "Review",
@@ -41,6 +50,7 @@ __all__ = [
     "RoleName",
     "TokenPurpose",
     "User",
+    "UserBadge",
     "user_role",
     "utcnow",
 ]

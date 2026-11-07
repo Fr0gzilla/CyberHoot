@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from flask import current_app, url_for
@@ -29,12 +30,13 @@ from app.models import (
     Media,
     PlaySession,
     Question,
+    QuestionKind,
     Quiz,
     QuizStatus,
     User,
     utcnow,
 )
-from app.services import mail
+from app.services import mail, progression
 from app.services import media as medias
 
 journal = logging.getLogger(__name__)
@@ -43,8 +45,12 @@ QUESTIONS_MAX = 50
 QUESTIONS_MIN_SOUMISSION = 3
 OPTIONS_MIN = 2
 OPTIONS_MAX = 6
+SEGMENTS_MAX = 12  # passages d'un faux message (phishing)
+ORDRE_MIN = 3
+VRAI_FAUX = ("Vrai", "Faux")
 CLE_QUESTION = re.compile(r"^q-(\d{1,2})-text$")
 CLE_OPTION = re.compile(r"^q-(\d{1,2})-o-(\d{1,2})-text$")
+TYPES = {k.value for k in QuestionKind}
 
 
 @dataclass
@@ -62,6 +68,19 @@ class BrouillonQuestion:
     options: list[BrouillonOption] = field(
         default_factory=lambda: [BrouillonOption(), BrouillonOption()]
     )
+    kind: str = QuestionKind.CHOICE.value
+    # Faux message (phishing) : canal (« email » ou « sms »), expéditeur, objet.
+    canal: str = "email"
+    expediteur: str = ""
+    objet: str = ""
+
+    @property
+    def options_max(self) -> int:
+        return SEGMENTS_MAX if self.kind == QuestionKind.PHISHING.value else OPTIONS_MAX
+
+    @property
+    def options_min(self) -> int:
+        return ORDRE_MIN if self.kind == QuestionKind.ORDER.value else OPTIONS_MIN
 
 
 @dataclass
@@ -107,6 +126,7 @@ def lire_formulaire(form: MultiDict[str, str]) -> Brouillon:
                 if (m := CLE_OPTION.match(cle)) and int(m.group(1)) == i
             }
         )
+        type_ = form.get(f"q-{i}-kind", QuestionKind.CHOICE.value)
         brouillon.questions.append(
             BrouillonQuestion(
                 text=_texte(form, f"q-{i}-text", 500),
@@ -118,8 +138,12 @@ def lire_formulaire(form: MultiDict[str, str]) -> Brouillon:
                         text=_texte(form, f"q-{i}-o-{j}-text", 300),
                         correct=form.get(f"q-{i}-o-{j}-correct") == "1",
                     )
-                    for j in indices_o[:OPTIONS_MAX]
+                    for j in indices_o[:SEGMENTS_MAX]
                 ],
+                kind=type_ if type_ in TYPES else QuestionKind.CHOICE.value,
+                canal=form.get(f"q-{i}-canal", "email"),
+                expediteur=_texte(form, f"q-{i}-expediteur", 120),
+                objet=_texte(form, f"q-{i}-objet", 150),
             )
         )
     return brouillon
@@ -143,14 +167,31 @@ def appliquer_action(brouillon: Brouillon, action: str) -> None:
         questions[i - 1], questions[i] = questions[i], questions[i - 1]
     elif nom == "descendre-question" and i < len(questions) - 1:
         questions[i + 1], questions[i] = questions[i], questions[i + 1]
-    elif nom == "ajouter-reponse" and len(question.options) < OPTIONS_MAX:
+    elif nom == "appliquer-type":
+        _adapter_au_type(question)
+    elif nom == "ajouter-reponse" and len(question.options) < question.options_max:
         question.options.append(BrouillonOption())
-    elif nom == "retirer-reponse" and len(parties) == 2 and len(question.options) > OPTIONS_MIN:
+    elif (
+        nom == "retirer-reponse"
+        and len(parties) == 2
+        and len(question.options) > question.options_min
+    ):
         if parties[1] < len(question.options):
             question.options.pop(parties[1])
     elif nom == "retirer-image":
         question.media_uid = ""
         question.media_alt = ""
+
+
+def _adapter_au_type(question: BrouillonQuestion) -> None:
+    """Prépare les réponses après un changement de type (vrai/faux : deux réponses fixes)."""
+    if question.kind == QuestionKind.TRUE_FALSE.value:
+        juste = next((o.text for o in question.options if o.correct), "")
+        juste = juste if juste in VRAI_FAUX else VRAI_FAUX[0]
+        question.options = [BrouillonOption(t, t == juste) for t in VRAI_FAUX]
+    while len(question.options) < question.options_min:
+        question.options.append(BrouillonOption())
+    del question.options[question.options_max :]
 
 
 def brouillon_depuis(quiz: Quiz) -> Brouillon:
@@ -166,6 +207,10 @@ def brouillon_depuis(quiz: Quiz) -> Brouillon:
                 media_uid=q.media.uid if q.media else "",
                 media_alt=q.media_alt or "",
                 options=[BrouillonOption(o.text, o.is_correct) for o in q.options],
+                kind=q.kind.value,
+                canal=(q.payload or {}).get("canal", "email"),
+                expediteur=(q.payload or {}).get("expediteur", ""),
+                objet=(q.payload or {}).get("objet", ""),
             )
             for q in quiz.questions
         ],
@@ -234,17 +279,51 @@ def valider(brouillon: Brouillon, medias_permis: set[str], soumission: bool = Fa
                 ajouter(f"q-{i}-image", "Image inconnue.")
             if not 3 <= len(question.media_alt) <= 200:
                 ajouter(f"q-{i}-alt", "Décrivez l'image en 3 à 200 caractères (accessibilité).")
-        if not OPTIONS_MIN <= len(question.options) <= OPTIONS_MAX:
-            ajouter(f"q-{i}-options", f"Entre {OPTIONS_MIN} et {OPTIONS_MAX} réponses.")
-        for j, option in enumerate(question.options):
-            if not 1 <= len(option.text) <= 300:
-                ajouter(f"q-{i}-o-{j}-text", "Réponse vide ou trop longue (300 caractères).")
-        textes = [o.text.lower() for o in question.options if o.text]
-        if len(set(textes)) != len(textes):
-            ajouter(f"q-{i}-options", "Deux réponses sont identiques.")
-        if not any(o.correct for o in question.options):
-            ajouter(f"q-{i}-options", "Cochez au moins une bonne réponse.")
+        if question.kind not in TYPES:
+            ajouter(f"q-{i}-kind", "Type de question inconnu.")
+            continue
+        _valider_reponses(question, f"q-{i}", ajouter)
     return erreurs
+
+
+def _valider_reponses(
+    question: BrouillonQuestion, prefixe: str, ajouter: Callable[[str, str], None]
+) -> None:
+    """Règles propres à chaque type de question."""
+    if not question.options_min <= len(question.options) <= question.options_max:
+        ajouter(
+            f"{prefixe}-options",
+            f"Entre {question.options_min} et {question.options_max} réponses.",
+        )
+    for j, option in enumerate(question.options):
+        if not 1 <= len(option.text) <= 300:
+            ajouter(f"{prefixe}-o-{j}-text", "Réponse vide ou trop longue (300 caractères).")
+    textes = [o.text.lower() for o in question.options if o.text]
+    if question.kind != QuestionKind.PHISHING.value and len(set(textes)) != len(textes):
+        ajouter(f"{prefixe}-options", "Deux réponses sont identiques.")
+
+    if question.kind == QuestionKind.ORDER.value:
+        return  # l'ordre de saisie est l'ordre attendu
+    nb_justes = sum(1 for o in question.options if o.correct)
+    if question.kind == QuestionKind.TRUE_FALSE.value:
+        if [o.text for o in question.options] != list(VRAI_FAUX) or nb_justes != 1:
+            ajouter(
+                f"{prefixe}-options",
+                "Un vrai/faux a deux réponses, « Vrai » et « Faux », dont une seule est juste.",
+            )
+        return
+    if question.kind == QuestionKind.PHISHING.value:
+        if question.canal not in {"email", "sms"}:
+            ajouter(f"{prefixe}-canal", "Choisissez e-mail ou SMS.")
+        if not 1 <= len(question.expediteur) <= 120:
+            ajouter(f"{prefixe}-expediteur", "Indiquez l'expéditeur affiché (120 caractères).")
+        if not nb_justes:
+            ajouter(f"{prefixe}-options", "Cochez au moins un passage suspect.")
+        elif nb_justes == len(question.options):
+            ajouter(f"{prefixe}-options", "Laissez au moins un passage anodin.")
+        return
+    if not nb_justes:
+        ajouter(f"{prefixe}-options", "Cochez au moins une bonne réponse.")
 
 
 # --- Enregistrement ------------------------------------------------------------------------
@@ -263,12 +342,22 @@ def _remplacer_questions(quiz: Quiz, brouillon: Brouillon) -> None:
         quiz.questions.append(
             Question(
                 position=position,
+                kind=QuestionKind(bq.kind),
+                payload=(
+                    {"canal": bq.canal, "expediteur": bq.expediteur, "objet": bq.objet}
+                    if bq.kind == QuestionKind.PHISHING.value
+                    else None
+                ),
                 text=bq.text,
                 explanation=bq.explanation,
                 media=par_uid.get(bq.media_uid),
                 media_alt=bq.media_alt or None,
                 options=[
-                    AnswerOption(position=j, text=o.text, is_correct=o.correct)
+                    AnswerOption(
+                        position=j,
+                        text=o.text,
+                        is_correct=o.correct and bq.kind != QuestionKind.ORDER.value,
+                    )
                     for j, o in enumerate(bq.options)
                 ],
             )
@@ -352,6 +441,8 @@ def publier(quiz: Quiz) -> bool:
     quiz.rejection_reason = None
     db.session.commit()
     _prevenir_createur(quiz, f"Votre quiz « {quiz.title} » est publié", "quiz_publie")
+    if quiz.creator is not None:
+        progression.attribuer(quiz.creator)
     return True
 
 

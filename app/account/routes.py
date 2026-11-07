@@ -8,7 +8,7 @@ from werkzeug.wrappers import Response
 
 from app.auth.forms import ChangePasswordForm, DeleteAccountForm, UsernameForm
 from app.extensions import limiter
-from app.services import accounts, play
+from app.services import accounts, play, progression
 
 bp = Blueprint("account", __name__)
 
@@ -41,6 +41,21 @@ def _page(
 @login_required
 def profile() -> tuple[str, int]:
     return _page(_formulaires())
+
+
+@bp.get("/progression")
+@login_required
+def progress() -> str:
+    en_cours, meilleure = progression.series(current_user)
+    return render_template(
+        "account/progression.html",
+        themes=progression.par_theme(current_user),
+        parties=progression.parties_terminees(current_user),
+        serie=en_cours,
+        meilleure_serie=meilleure,
+        badges=progression.badges_de(current_user),
+        nb_badges=len(progression.tous_les_badges()),
+    )
 
 
 @bp.post("/pseudo")

@@ -1,0 +1,107 @@
+{
+  "title": "Wi-Fi public, box et VPN",
+  "description": "Café, hôtel, gare, maison : dix questions pour utiliser les réseaux Wi-Fi sans exposer vos données et bien régler votre box.",
+  "category": "reseaux-wifi",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "kind": "true_false",
+      "text": "Au café, un réseau Wi-Fi qui porte le nom de l'établissement appartient forcément à ce café.",
+      "explanation": "Faux. N'importe qui peut créer un point d'accès Wi-Fi et lui donner le nom qu'il veut, par exemple celui du café d'en face : c'est la technique du « jumeau maléfique ». Une fois connecté, vous passez par l'appareil de l'escroc. Demandez le nom exact du réseau au personnel et évitez les opérations sensibles sur un Wi-Fi public.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "text": "Vous êtes connecté au Wi-Fi gratuit d'une gare. Quelle opération vaut mieux reporter, ou faire en passant par vos données mobiles ?",
+      "explanation": "Sur un réseau public, vous ne savez pas qui gère le point d'accès ni qui écoute. Pour les opérations sensibles (banque, achats, démarches administratives), préférez la connexion 4G/5G de votre téléphone. Consulter la météo ou les horaires de train ne présente pas de risque particulier.",
+      "options": [
+        {"text": "Consulter la météo"},
+        {"text": "Regarder les horaires de train"},
+        {"text": "Faire un virement depuis votre espace bancaire", "correct": true}
+      ]
+    },
+    {
+      "text": "Quel mode de sécurité choisir pour le Wi-Fi de votre box ?",
+      "explanation": "Le WPA3 est le standard le plus récent et le plus sûr ; le WPA2 reste acceptable si certains de vos appareils ne gèrent pas le WPA3. Le WEP est obsolète et se casse en quelques minutes. Un réseau ouvert laisse n'importe quel voisin se connecter, et masquer le nom du réseau ne protège pratiquement rien.",
+      "options": [
+        {"text": "WEP"},
+        {"text": "WPA3, ou WPA2 si certains appareils ne gèrent pas le WPA3", "correct": true},
+        {"text": "Un réseau ouvert dont le nom est masqué"},
+        {"text": "Aucun, la box est déjà protégée par l'opérateur"}
+      ]
+    },
+    {
+      "text": "Vous installez une box Internet. Quel réglage vérifier en priorité ?",
+      "explanation": "Si l'interface d'administration de la box est protégée par un mot de passe générique (du type « admin »), toute personne connectée à votre réseau peut modifier ses réglages. Remplacez-le par un mot de passe robuste et unique. Vérifiez aussi que le Wi-Fi utilise le WPA2 ou le WPA3 et que la box se met bien à jour.",
+      "options": [
+        {"text": "Remplacer le mot de passe d'administration s'il est générique", "correct": true},
+        {"text": "Changer la couleur des voyants"},
+        {"text": "Donner au Wi-Fi votre nom et votre adresse pour le reconnaître"}
+      ]
+    },
+    {
+      "text": "Que fait réellement un VPN ?",
+      "explanation": "Un VPN crée un « tunnel » chiffré entre votre appareil et le serveur du fournisseur de VPN : le gestionnaire du Wi-Fi ne voit plus ce que vous faites. Mais il ne vous rend pas anonyme (le fournisseur de VPN voit votre trafic, et les sites peuvent toujours vous reconnaître si vous êtes connecté à votre compte), et il ne protège ni des virus ni de l'hameçonnage.",
+      "options": [
+        {"text": "Il vous rend totalement anonyme sur Internet"},
+        {"text": "Il chiffre votre trafic entre votre appareil et le serveur du fournisseur de VPN", "correct": true},
+        {"text": "Il bloque tous les virus"},
+        {"text": "Il empêche d'ouvrir les liens d'hameçonnage"}
+      ]
+    },
+    {
+      "text": "Une application de VPN gratuite, publiée par un éditeur inconnu, promet une « protection totale ». Quel est le risque principal ?",
+      "explanation": "Avec un VPN, tout votre trafic passe par les serveurs du fournisseur : vous lui accordez donc une très grande confiance. Un service gratuit doit bien se financer, et certains le font en collectant et revendant les données de leurs utilisateurs, voire en injectant de la publicité. Si vous avez besoin d'un VPN, choisissez un fournisseur reconnu, à la politique de confidentialité claire, ou celui fourni par votre employeur.",
+      "options": [
+        {"text": "Aucun, un VPN protège toujours"},
+        {"text": "L'éditeur voit passer tout votre trafic et peut collecter ou revendre vos données", "correct": true},
+        {"text": "Le VPN va user la batterie au point de l'endommager"}
+      ]
+    },
+    {
+      "text": "Vous activez le partage de connexion de votre téléphone pour un ordinateur. Quelles précautions prendre ? (plusieurs réponses)",
+      "explanation": "Un partage de connexion est un petit réseau Wi-Fi : protégez-le par un mot de passe solide en WPA2 ou WPA3, et désactivez-le une fois que vous n'en avez plus besoin. Le laisser ouvert permet à des inconnus de consommer votre forfait, voire de se connecter à vos appareils. Évitez aussi un nom de réseau qui révèle votre identité.",
+      "options": [
+        {"text": "Le protéger par un mot de passe solide", "correct": true},
+        {"text": "Le désactiver dès que vous n'en avez plus besoin", "correct": true},
+        {"text": "Le laisser sans mot de passe pour aller plus vite"},
+        {"text": "Lui donner votre prénom et votre nom pour le retrouver facilement"}
+      ]
+    },
+    {
+      "kind": "phishing",
+      "text": "Repérez les indices suspects de ce SMS. (plusieurs réponses)",
+      "explanation": "Un prélèvement rejeté peut arriver, c'est pourquoi le début du message paraît crédible. Mais la coupure annoncée « aujourd'hui à 18 h » sert à vous presser, et le lien mène vers un domaine qui n'a rien à voir avec l'opérateur : le vrai domaine est « regularisation-client.co ». Le message vient en plus d'un numéro de portable ordinaire. Vérifiez en vous connectant vous-même à votre espace client, ou en appelant le service client au numéro figurant sur votre contrat. Signalez le SMS au 33700.",
+      "message": {"canal": "sms", "expediteur": "06 00 00 00 00", "objet": ""},
+      "options": [
+        {"text": "NetBox Fibre :"},
+        {"text": "votre dernier prélèvement a été rejeté."},
+        {"text": "Votre connexion Internet sera coupée aujourd'hui à 18 h.", "correct": true},
+        {"text": "Régularisez maintenant sur netbox-fibre.regularisation-client.co", "correct": true},
+        {"text": "Merci de votre fidélité."}
+      ]
+    },
+    {
+      "kind": "order",
+      "text": "Vous arrivez à l'hôtel et souhaitez utiliser le Wi-Fi. Remettez ces étapes dans l'ordre.",
+      "explanation": "Demander le nom exact du réseau évite de se connecter à un faux point d'accès. Une fois connecté, réservez ce réseau aux usages sans risque et gardez les opérations sensibles pour vos données mobiles. En partant, demandez à votre appareil d'« oublier » le réseau, pour qu'il ne s'y reconnecte pas automatiquement plus tard, y compris à un faux réseau portant le même nom.",
+      "options": [
+        {"text": "Demander à l'accueil le nom exact du réseau"},
+        {"text": "Se connecter à ce réseau"},
+        {"text": "Naviguer en évitant les opérations sensibles"},
+        {"text": "En partant, faire « oublier » le réseau à l'appareil"}
+      ]
+    },
+    {
+      "text": "Pourquoi désactiver la connexion automatique aux réseaux Wi-Fi ouverts sur votre téléphone ?",
+      "explanation": "Votre téléphone mémorise les réseaux déjà utilisés et cherche à s'y reconnecter. Un escroc peut créer un faux réseau portant un nom courant (celui d'une chaîne de cafés ou d'une gare) : votre téléphone s'y connecterait sans même vous demander. Désactivez la connexion automatique et supprimez les réseaux publics dont vous ne vous servez plus.",
+      "options": [
+        {"text": "Pour économiser la batterie uniquement"},
+        {"text": "Pour éviter qu'il se connecte tout seul à un faux réseau portant un nom connu", "correct": true},
+        {"text": "Parce que c'est interdit par la loi"}
+      ]
+    }
+  ]
+}

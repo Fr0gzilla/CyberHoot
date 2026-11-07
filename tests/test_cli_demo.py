@@ -37,13 +37,13 @@ def test_charger_la_demo_une_seule_fois(app: Flask, admin: User) -> None:
     cli = app.test_cli_runner()
     premier = cli.invoke(args=["charger-demo", "--email", "chef@example.org"])
     assert premier.exit_code == 0, premier.output
-    assert "Quiz ajoutés : 2" in premier.output
+    assert "Quiz ajoutés : 8" in premier.output
     second = cli.invoke(args=["charger-demo", "--email", "chef@example.org"])
     assert "Quiz ajoutés : 0" in second.output
     publies = db.session.scalar(
         select(func.count()).select_from(Quiz).where(Quiz.status == QuizStatus.PUBLISHED)
     )
-    assert publies == 2
+    assert publies == 8
 
 
 def test_charger_demo_compte_inconnu(app: Flask) -> None:

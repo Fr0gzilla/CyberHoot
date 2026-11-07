@@ -68,6 +68,10 @@ def formulaire(b: quizzes.Brouillon, action: str = "enregistrer") -> dict[str, s
         "action": action,
     }
     for i, q in enumerate(b.questions):
+        champs[f"q-{i}-kind"] = q.kind
+        champs[f"q-{i}-canal"] = q.canal
+        champs[f"q-{i}-expediteur"] = q.expediteur
+        champs[f"q-{i}-objet"] = q.objet
         champs[f"q-{i}-text"] = q.text
         champs[f"q-{i}-explanation"] = q.explanation
         champs[f"q-{i}-alt"] = q.media_alt
@@ -78,3 +82,43 @@ def formulaire(b: quizzes.Brouillon, action: str = "enregistrer") -> dict[str, s
             if o.correct:
                 champs[f"q-{i}-o-{j}-correct"] = "1"
     return champs
+
+
+def brouillon_types(titre: str = "Quiz varié") -> quizzes.Brouillon:
+    """Un quiz avec un exemple de chaque type de question (choix, vrai/faux, phishing, ordre)."""
+    b = brouillon(1, titre)
+    b.questions += [
+        quizzes.BrouillonQuestion(
+            text="Le cadenas garantit que le site est honnête.",
+            explanation="Faux : il garantit seulement le chiffrement.",
+            options=[quizzes.BrouillonOption("Vrai"), quizzes.BrouillonOption("Faux", True)],
+            kind="true_false",
+        ),
+        quizzes.BrouillonQuestion(
+            text="Repérez les indices suspects de ce message.",
+            explanation="Urgence et lien inconnu sont les signes classiques.",
+            options=[
+                quizzes.BrouillonOption("Bonjour,"),
+                quizzes.BrouillonOption("votre compte sera fermé dans 2 heures", True),
+                quizzes.BrouillonOption("cliquez sur banque-horizon-verif.example", True),
+                quizzes.BrouillonOption("Cordialement."),
+            ],
+            kind="phishing",
+            canal="email",
+            expediteur="service@banque-horizon-securite.example",
+            objet="Action requise",
+        ),
+        quizzes.BrouillonQuestion(
+            text="Remettez dans l'ordre les étapes après un clic sur un lien piégé.",
+            explanation=(
+                "On change d'abord le mot de passe, puis on active la double authentification."
+            ),
+            options=[
+                quizzes.BrouillonOption("Changer le mot de passe"),
+                quizzes.BrouillonOption("Activer la double authentification"),
+                quizzes.BrouillonOption("Surveiller les connexions"),
+            ],
+            kind="order",
+        ),
+    ]
+    return b
