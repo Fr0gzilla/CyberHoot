@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% from "macros/quiz.html" import badge_statut %}
+{% block title %}{{ 'Modifier' if quiz else 'Nouveau quiz' }}{% endblock %}
+
+{% macro erreurs_de(cle) -%}
+  {% if erreurs.get(cle) %}
+    <ul id="{{ cle }}-erreurs" class="champ-erreur">{% for m in erreurs[cle] %}<li>{{ m }}</li>{% endfor %}</ul>
+  {% endif %}
+{%- endmacro %}
+{% macro invalide(cle) -%}
+  aria-invalid="{{ 'true' if erreurs.get(cle) else 'false' }}"{% if erreurs.get(cle) %} aria-describedby="{{ cle }}-erreurs"{% endif %}
+{%- endmacro %}
+
+{% block content %}
+  <p><a href="{{ url_for('creator.dashboard') }}">← Mes quiz</a></p>
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <h1>{{ 'Modifier le quiz' if quiz else 'Nouveau quiz' }}</h1>
+    {% if quiz %}{{ badge_statut(quiz) }}{% endif %}
+  </div>
+  {% if quiz and quiz.rejection_reason %}
+    <div class="message message-error mt-4"><p><strong>Motif du refus :</strong> {{ quiz.rejection_reason }}</p></div>
+  {% endif %}
+  {% if quiz and quiz.is_published and quiz.creator_id == current_user.id %}
+    <p class="message message-info mt-4">Ce quiz est publié : si vous l'enregistrez, il repassera en validation avant de réapparaître.</p>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" novalidate class="mt-6 space-y-6">
+    {{ form.hidden_tag() }}
+    {# Touche Entrée dans un champ : enregistre (et non le premier bouton de la page). #}
+    <button type="submit" name="action" value="enregistrer" class="sr-only" tabindex="-1" aria-hidden="true">Enregistrer</button>
+
+    <section class="carte" aria-labelledby="titre-infos">
+      <h2 id="titre-infos">Informations</h2>
+      <div class="mt-4 grid gap-5 md:grid-cols-2">
+        <div class="md:col-span-2">
+          <label for="title" class="champ-libelle">Titre</label>
+          <input id="title" name="title" class="champ" value="{{ b.title }}" maxlength="120" required {{ invalide('title') }}>
+          {{ erreurs_de('title') }}
+        </div>
+        <div class="md:col-span-2">
+          <label for="description" class="champ-libelle">Description</label>
+          <textarea id="description" name="description" rows="3" class="champ" maxlength="500" {{ invalide('description') }}>{{ b.description }}</textarea>
+          {{ erreurs_de('description') }}
+        </div>
+        <div>
+          <label for="category" class="champ-libelle">Catégorie</label>
+          <select id="category" name="category" class="champ" required {{ invalide('category') }}>
+            <option value="">— Choisir —</option>
+            {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if b.category_id == c.id }}>{{ c.name }}</option>{% endfor %}
+          </select>
+          {{ erreurs_de('category') }}
+        </div>
+        <div>
+          <label for="difficulty" class="champ-libelle">Niveau</label>
+          <select id="difficulty" name="difficulty" class="champ" {{ invalide('difficulty') }}>
+            {% for niveau, libelle in niveaux.items() %}<option value="{{ niveau.value }}" {{ 'selected' if b.difficulty == niveau.value }}>{{ libelle }}</option>{% endfor %}
+          </select>
+          {{ erreurs_de('difficulty') }}
+        </div>
+      </div>
+    </section>
+
+    {{ erreurs_de('questions') }}
+    {% for q in b.questions %}
+      {% set i = loop.index0 %}
+      <fieldset class="carte" id="question-{{ i }}">
+        <legend class="sr-only">Question {{ i + 1 }}</legend>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 aria-hidden="true">Question {{ i + 1 }}</h2>
+          <div class="flex flex-wrap gap-2">
+            {% if not loop.first %}<button type="submit" name="action" value="monter-question:{{ i }}" class="bouton-secondaire px-3 py-1.5 text-sm">↑ Monter<span class="sr-only"> la question {{ i + 1 }}</span></button>{% endif %}
+            {% if not loop.last %}<button type="submit" name="action" value="descendre-question:{{ i }}" class="bouton-secondaire px-3 py-1.5 text-sm">↓ Descendre<span class="sr-only"> la question {{ i + 1 }}</span></button>{% endif %}
+            {% if b.questions|length > 1 %}<button type="submit" name="action" value="retirer-question:{{ i }}" class="bouton-secondaire px-3 py-1.5 text-sm text-red-700 dark:text-red-300">Retirer<span class="sr-only"> la question {{ i + 1 }}</span></button>{% endif %}
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <label for="q-{{ i }}-text" class="champ-libelle">Intitulé</label>
+          <textarea id="q-{{ i }}-text" name="q-{{ i }}-text" rows="2" class="champ" maxlength="500" {{ invalide('q-' ~ i ~ '-text') }}>{{ q.text }}</textarea>
+          {{ erreurs_de('q-' ~ i ~ '-text') }}
+        </div>
+
+        <div class="mt-4 rounded-xl border border-dashed border-slate-300 p-4 dark:border-nuit-700">
+          <p class="champ-libelle">Image (facultative)</p>
+          {% if q.media_uid %}
+            <input type="hidden" name="q-{{ i }}-media" value="{{ q.media_uid }}">
+            <img src="{{ url_for('quiz.media_file', uid=q.media_uid) }}" alt="" class="max-h-40 rounded-lg">
+            <button type="submit" name="action" value="retirer-image:{{ i }}" class="bouton-secondaire mt-2 px-3 py-1.5 text-sm">Retirer l'image</button>
+          {% else %}
+            <label for="q-{{ i }}-image" class="sr-only">Image de la question {{ i + 1 }}</label>
+            <input id="q-{{ i }}-image" name="q-{{ i }}-image" type="file" accept="image/png,image/jpeg,image/webp" class="block w-full text-sm" {{ invalide('q-' ~ i ~ '-image') }}>
+            <p class="champ-aide">PNG, JPEG ou WebP, 2 Mo au plus. Elle sera analysée avant d'être visible des joueurs.</p>
+          {% endif %}
+          {{ erreurs_de('q-' ~ i ~ '-image') }}
+          <label for="q-{{ i }}-alt" class="champ-libelle mt-3">Description de l'image (lue par les lecteurs d'écran)</label>
+          <input id="q-{{ i }}-alt" name="q-{{ i }}-alt" class="champ" value="{{ q.media_alt }}" maxlength="200" {{ invalide('q-' ~ i ~ '-alt') }}>
+          {{ erreurs_de('q-' ~ i ~ '-alt') }}
+        </div>
+
+        <fieldset class="mt-4">
+          <legend class="champ-libelle">Réponses proposées <span class="font-normal text-slate-600 dark:text-slate-300">({{ limites.options_min }} à {{ limites.options_max }}, cochez la ou les bonnes)</span></legend>
+          {{ erreurs_de('q-' ~ i ~ '-options') }}
+          <ul class="space-y-3">
+            {% for o in q.options %}
+              {% set j = loop.index0 %}
+              <li class="flex flex-wrap items-center gap-3">
+                <label for="q-{{ i }}-o-{{ j }}-text" class="sr-only">Réponse {{ j + 1 }}</label>
+                <input id="q-{{ i }}-o-{{ j }}-text" name="q-{{ i }}-o-{{ j }}-text" class="champ min-w-0 flex-1" value="{{ o.text }}" maxlength="300" placeholder="Réponse {{ j + 1 }}" {{ invalide('q-' ~ i ~ '-o-' ~ j ~ '-text') }}>
+                <label class="flex items-center gap-2 whitespace-nowrap">
+                  <input type="checkbox" name="q-{{ i }}-o-{{ j }}-correct" value="1" class="h-5 w-5" {{ 'checked' if o.correct }}> Bonne réponse
+                </label>
+                {% if q.options|length > limites.options_min %}
+                  <button type="submit" name="action" value="retirer-reponse:{{ i }}:{{ j }}" class="bouton-secondaire px-3 py-1.5 text-sm">Retirer<span class="sr-only"> la réponse {{ j + 1 }}</span></button>
+                {% endif %}
+                {{ erreurs_de('q-' ~ i ~ '-o-' ~ j ~ '-text') }}
+              </li>
+            {% endfor %}
+          </ul>
+          {% if q.options|length < limites.options_max %}
+            <button type="submit" name="action" value="ajouter-reponse:{{ i }}" class="bouton-secondaire mt-3 px-3 py-1.5 text-sm">+ Ajouter une réponse<span class="sr-only"> à la question {{ i + 1 }}</span></button>
+          {% endif %}
+        </fieldset>
+
+        <div class="mt-4">
+          <label for="q-{{ i }}-explanation" class="champ-libelle">Explication (affichée après la réponse)</label>
+          <textarea id="q-{{ i }}-explanation" name="q-{{ i }}-explanation" rows="3" class="champ" maxlength="2000" {{ invalide('q-' ~ i ~ '-explanation') }}>{{ q.explanation }}</textarea>
+          {{ erreurs_de('q-' ~ i ~ '-explanation') }}
+        </div>
+      </fieldset>
+    {% endfor %}
+
+    {% if b.questions|length < limites.questions %}
+      <button type="submit" name="action" value="ajouter-question" class="bouton-secondaire">+ Ajouter une question</button>
+    {% endif %}
+
+    <div class="carte flex flex-wrap gap-3">
+      <button type="submit" name="action" value="enregistrer" class="bouton-principal">Enregistrer</button>
+      {% if not quiz or (quiz.creator_id == current_user.id and quiz.status.value in ['draft', 'rejected']) %}
+        <button type="submit" name="action" value="soumettre" class="bouton-secondaire">Enregistrer et soumettre à validation</button>
+      {% endif %}
+      {% if quiz %}<a class="bouton-secondaire" href="{{ url_for('quiz.detail', quiz_id=quiz.id) }}">Aperçu</a>{% endif %}
+    </div>
+  </form>
+{% endblock %}

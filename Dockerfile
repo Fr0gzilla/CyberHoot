@@ -40,7 +40,8 @@ COPY --chown=root:root app ./app
 COPY --chown=root:root migrations ./migrations
 COPY --chown=root:root alembic.ini wsgi.py gunicorn.conf.py docker/entrypoint.sh ./
 COPY --from=css --chown=root:root /build/app/static/css/app.css ./app/static/css/app.css
-RUN chmod 0755 entrypoint.sh
+RUN chmod 0755 entrypoint.sh \
+    && mkdir -p /data/uploads && chown cyberhoot:cyberhoot /data/uploads && chmod 0750 /data/uploads
 USER cyberhoot
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \

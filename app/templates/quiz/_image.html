@@ -1,0 +1,4 @@
+{% if question.media %}
+  <img src="{{ url_for('quiz.media_file', uid=question.media.uid) }}" alt="{{ question.media_alt or '' }}"
+       class="mt-4 max-h-80 w-auto rounded-xl border border-slate-200 dark:border-nuit-700" loading="lazy">
+{% endif %}

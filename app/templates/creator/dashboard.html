@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "macros/quiz.html" import badge_statut, etoiles %}
+{% block title %}Mes quiz{% endblock %}
+{% block content %}
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <h1>Mes quiz</h1>
+    <a class="bouton-principal" href="{{ url_for('creator.new') }}">+ Nouveau quiz</a>
+  </div>
+  <p class="mt-2 text-slate-700 dark:text-slate-300">Brouillon → soumis à validation → publié. Un administrateur relit chaque quiz avant publication.</p>
+
+  {% if mes_quiz %}
+    <ul class="mt-6 space-y-4">
+      {% for quiz in mes_quiz %}
+        <li class="carte flex flex-wrap items-center justify-between gap-4">
+          <div class="min-w-0">
+            <h2 class="text-lg">{{ quiz.title }}</h2>
+            <p class="mt-1 flex flex-wrap items-center gap-2 text-sm">
+              {{ badge_statut(quiz) }}
+              <span>{{ quiz.questions|length }} question{{ 's' if quiz.questions|length > 1 }}</span>
+              <span>· modifié le {{ quiz.updated_at.strftime('%d/%m/%Y') }}</span>
+              {% if quiz.is_published %}<span>· {{ etoiles(notes[quiz.id]) }}</span>{% endif %}
+            </p>
+            {% if quiz.rejection_reason %}<p class="mt-2 text-sm text-red-700 dark:text-red-300">Motif du refus : {{ quiz.rejection_reason }}</p>{% endif %}
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a class="bouton-secondaire px-3 py-1.5 text-sm" href="{{ url_for('creator.edit', quiz_id=quiz.id) }}">Modifier<span class="sr-only"> « {{ quiz.title }} »</span></a>
+            <a class="bouton-secondaire px-3 py-1.5 text-sm" href="{{ url_for('creator.stats', quiz_id=quiz.id) }}">Statistiques<span class="sr-only"> de « {{ quiz.title }} »</span></a>
+            {% if quiz.status.value in ['draft', 'rejected'] %}
+              <form method="post" action="{{ url_for('creator.submit', quiz_id=quiz.id) }}">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="bouton-secondaire px-3 py-1.5 text-sm">Soumettre<span class="sr-only"> « {{ quiz.title }} »</span></button>
+              </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('creator.delete', quiz_id=quiz.id) }}" data-confirmer="Supprimer définitivement « {{ quiz.title }} » et ses résultats ?">
+              {{ form.hidden_tag() }}
+              <button type="submit" class="bouton-secondaire px-3 py-1.5 text-sm text-red-700 dark:text-red-300">Supprimer<span class="sr-only"> « {{ quiz.title }} »</span></button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="carte mt-6 text-center">
+      <p>Vous n'avez pas encore créé de quiz.</p>
+      <p class="mt-4"><a class="bouton-principal" href="{{ url_for('creator.new') }}">Créer mon premier quiz</a></p>
+    </div>
+  {% endif %}
+{% endblock %}

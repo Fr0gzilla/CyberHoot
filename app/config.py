@@ -9,6 +9,7 @@ refuse de démarrer si un secret obligatoire manque ou garde une valeur d'exempl
 from __future__ import annotations
 
 import os
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -130,6 +131,13 @@ class Config:
     SMTP_PASSWORD: str | None = None
     SMTP_STARTTLS: bool = True
 
+    # Images téléversées (volume hors du dépôt) et analyse antivirus
+    UPLOAD_DIR: str = "/data/uploads"
+    MEDIA_MAX_BYTES: int = 2 * 1024 * 1024
+    SCAN_BACKEND: str = "simule"
+    SCAN_SIMULE_REFUS: frozenset[str] = frozenset()
+    VIRUSTOTAL_API_KEY: str | None = None
+
     # URL publique, utilisée dans les liens envoyés par e-mail
     PUBLIC_URL: str = "http://localhost:8080"
 
@@ -154,6 +162,9 @@ def charger_config(env: str | None = None) -> Config:
             REMEMBER_COOKIE_SECURE=False,
             MAIL_BACKEND="memoire",
             PROXY_COUNT=0,
+            UPLOAD_DIR=os.environ.get(
+                "UPLOAD_DIR", str(Path(tempfile.gettempdir()) / "cyberhoot-test-uploads")
+            ),
         )
 
     config = Config(
@@ -170,6 +181,9 @@ def charger_config(env: str | None = None) -> Config:
         SMTP_STARTTLS=_booleen("SMTP_STARTTLS", True),
         PUBLIC_URL=os.environ.get("PUBLIC_URL", Config.PUBLIC_URL).rstrip("/"),
         PROXY_COUNT=int(os.environ.get("PROXY_COUNT", "1")),
+        UPLOAD_DIR=os.environ.get("UPLOAD_DIR", Config.UPLOAD_DIR),
+        SCAN_BACKEND=os.environ.get("SCAN_BACKEND", "simule"),
+        VIRUSTOTAL_API_KEY=lire_secret("VIRUSTOTAL_API_KEY", obligatoire=False),
     )
     if env == "development":
         config.DEBUG = True
@@ -183,4 +197,8 @@ def charger_config(env: str | None = None) -> Config:
         config.REMEMBER_COOKIE_SECURE = secure
     if config.MAIL_BACKEND not in {"console", "memoire", "smtp"}:
         raise ConfigurationError(f"MAIL_BACKEND inconnu : {config.MAIL_BACKEND}")
+    if config.SCAN_BACKEND not in {"simule", "virustotal"}:
+        raise ConfigurationError(f"SCAN_BACKEND inconnu : {config.SCAN_BACKEND}")
+    if config.SCAN_BACKEND == "virustotal" and not config.VIRUSTOTAL_API_KEY:
+        raise ConfigurationError("SCAN_BACKEND=virustotal exige VIRUSTOTAL_API_KEY(_FILE)")
     return config

@@ -1,0 +1,9 @@
+Bonjour {{ user.username }},
+
+Bonne nouvelle : votre quiz « {{ quiz.title }} » a été relu et publié. Il est désormais visible dans le catalogue.
+
+Suivez ses statistiques depuis votre espace créateur :
+
+{{ lien }}
+
+— L'équipe CyberHoot

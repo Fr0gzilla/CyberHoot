@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "macros/quiz.html" import meta, badge_statut %}
+{% from "macros/forms.html" import champ %}
+{% block title %}Relecture — {{ quiz.title }}{% endblock %}
+{% block content %}
+  <p><a href="{{ url_for('admin.dashboard') }}">← Administration</a></p>
+  <div class="mt-4 flex flex-wrap items-center gap-3"><h1>{{ quiz.title }}</h1>{{ badge_statut(quiz) }}</div>
+  <div class="mt-3 flex flex-wrap gap-2">{{ meta(quiz) }}</div>
+  <p class="mt-3 text-slate-700 dark:text-slate-300">{{ quiz.description }}</p>
+  <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">par {{ quiz.creator.username if quiz.creator else 'compte supprimé' }}</p>
+
+  {% if images_en_attente %}
+    <p class="message message-info mt-4">{{ images_en_attente|length }} image(s) en cours d'analyse antivirus : la publication sera possible ensuite.</p>
+  {% endif %}
+
+  <ol class="mt-6 space-y-4">
+    {% for question in quiz.questions %}
+      <li class="carte">
+        <h2 class="text-lg">{{ loop.index }}. {{ question.text }}</h2>
+        {% include "quiz/_image.html" %}
+        {% if question.media %}<p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Description : {{ question.media_alt }}</p>{% endif %}
+        <ul class="mt-3 space-y-1">
+          {% for option in question.options %}
+            <li class="{{ 'font-semibold text-phosphore-800 dark:text-phosphore-300' if option.is_correct }}">{{ '✓' if option.is_correct else '·' }} {{ option.text }}</li>
+          {% endfor %}
+        </ul>
+        <p class="mt-3 whitespace-pre-line rounded-xl bg-slate-100 p-3 text-sm dark:bg-nuit-800">{{ question.explanation }}</p>
+      </li>
+    {% endfor %}
+  </ol>
+
+  <div class="mt-8 grid gap-6 md:grid-cols-2">
+    <div class="carte">
+      <h2>Décision</h2>
+      <div class="mt-4 flex flex-wrap gap-3">
+        {% if quiz.status.value == 'pending' %}
+          <form method="post" action="{{ url_for('admin.publish', quiz_id=quiz.id) }}">
+            {{ form.hidden_tag() }}
+            <button type="submit" class="bouton-principal" {{ 'disabled' if images_en_attente }}>Publier</button>
+          </form>
+        {% endif %}
+        <a class="bouton-secondaire" href="{{ url_for('creator.edit', quiz_id=quiz.id) }}">Corriger moi-même</a>
+      </div>
+    </div>
+    {% if quiz.status.value in ['pending', 'published'] %}
+      <form method="post" action="{{ url_for('admin.reject', quiz_id=quiz.id) }}" class="carte" novalidate>
+        <h2>{{ 'Refuser' if quiz.status.value == 'pending' else 'Dépublier' }}</h2>
+        {{ reject_form.hidden_tag() }}
+        <div class="mt-4">{{ champ(reject_form.reason) }}</div>
+        <button type="submit" class="bouton-danger">{{ 'Refuser' if quiz.status.value == 'pending' else 'Dépublier' }} et prévenir le créateur</button>
+      </form>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "macros/quiz.html" import etoiles, meta, badge_statut %}
+{% from "macros/forms.html" import champ %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block content %}
+  <p><a href="{{ url_for('quiz.catalog_page') }}">← Tous les quiz</a></p>
+  <div class="mt-4 grid gap-8 lg:grid-cols-[2fr_1fr]">
+    <section>
+      {% if not quiz.is_published %}<p class="mb-3">{{ badge_statut(quiz) }} <span class="text-sm text-slate-600 dark:text-slate-300">Aperçu : seuls son créateur et les administrateurs voient cette page.</span></p>{% endif %}
+      <h1>{{ quiz.title }}</h1>
+      <div class="mt-4 flex flex-wrap gap-2">{{ meta(quiz) }}</div>
+      <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">{{ quiz.description }}</p>
+      <p class="mt-4">{{ etoiles(note) }}</p>
+      {% if quiz.creator %}<p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Créé par {{ quiz.creator.username }}</p>{% endif %}
+    </section>
+    <aside class="carte self-start">
+      <h2>Jouer</h2>
+      {% if not jouable %}
+        <p class="mt-2">Ce quiz n'est pas encore publié.</p>
+      {% elif current_user.is_authenticated %}
+        <p class="mt-2 text-slate-700 dark:text-slate-300">Une question à la fois, avec l'explication après chaque réponse. Vous pouvez reprendre une partie interrompue.</p>
+        <form method="post" action="{{ url_for('quiz.start', quiz_id=quiz.id) }}" class="mt-4">
+          {{ form.hidden_tag() }}
+          <button type="submit" class="bouton-principal w-full">Commencer</button>
+        </form>
+      {% else %}
+        <p class="mt-2"><a href="{{ url_for('auth.login', next=request.path) }}">Connectez-vous</a> ou <a href="{{ url_for('auth.register') }}">créez un compte</a> pour jouer et suivre vos progrès.</p>
+      {% endif %}
+    </aside>
+  </div>
+
+  <section id="avis" class="mt-12" aria-labelledby="titre-avis">
+    <h2 id="titre-avis">Avis</h2>
+    {% if formulaire_avis %}
+      <form method="post" action="{{ url_for('quiz.review', quiz_id=quiz.id) }}" class="carte mt-4 max-w-xl" novalidate>
+        {{ formulaire_avis.hidden_tag() }}
+        <fieldset>
+          <legend class="champ-libelle">Votre note</legend>
+          <div class="flex flex-wrap gap-4">
+            {% for option in formulaire_avis.rating %}
+              <label class="flex items-center gap-2">{{ option(class="h-5 w-5") }} {{ option.label.text }}</label>
+            {% endfor %}
+          </div>
+        </fieldset>
+        <div class="mt-4">{{ champ(formulaire_avis.comment) }}</div>
+        <button type="submit" class="bouton-principal">Publier mon avis</button>
+      </form>
+    {% elif current_user.is_authenticated and jouable %}
+      <p class="mt-2 text-slate-600 dark:text-slate-300">Terminez une partie pour donner votre avis.</p>
+    {% endif %}
+    {% if avis %}
+      <ul class="mt-6 space-y-4">
+        {% for a in avis %}
+          <li class="carte">
+            <p><span class="font-semibold">{{ a.user.username }}</span> · <span aria-label="{{ a.rating }} sur 5"><span aria-hidden="true" class="text-amber-600 dark:text-amber-300">{{ '★' * a.rating }}{{ '☆' * (5 - a.rating) }}</span></span> · <span class="text-sm text-slate-600 dark:text-slate-300">{{ a.updated_at.strftime('%d/%m/%Y') }}</span></p>
+            {% if a.comment %}<p class="mt-2 whitespace-pre-line">{{ a.comment }}</p>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-2 text-slate-600 dark:text-slate-300">Aucun avis pour l'instant.</p>
+    {% endif %}
+  </section>
+{% endblock %}

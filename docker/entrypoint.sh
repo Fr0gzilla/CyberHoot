@@ -1,6 +1,6 @@
 #!/bin/sh
-# Démarrage du conteneur : attend la base, applique les migrations, purge les comptes
-# jamais activés, puis lance la commande demandée (gunicorn par défaut).
+# Démarrage du conteneur : attend la base, applique les migrations et purge les comptes
+# jamais activés (application seulement), puis lance la commande demandée.
 set -eu
 
 essais=0
@@ -19,6 +19,9 @@ with moteur.connect() as c:
   sleep 2
 done
 
-alembic upgrade head
-flask --app wsgi purger-comptes
+# Un seul conteneur (l'application) applique les migrations ; le worker attend qu'il soit prêt.
+if [ "${RUN_MIGRATIONS:-1}" = "1" ]; then
+  alembic upgrade head
+  flask --app wsgi purger-comptes
+fi
 exec "$@"

@@ -10,6 +10,7 @@
       <li><strong>Adresse e-mail</strong> : activation du compte, réinitialisation du mot de passe, alertes de sécurité. Jamais affichée ni transmise à des tiers.</li>
       <li><strong>Mot de passe</strong> : conservé uniquement sous forme d'empreinte (Argon2id), jamais en clair.</li>
       <li><strong>Dates de création et de dernière connexion</strong> : sécurité du compte.</li>
+      <li><strong>Parties et avis</strong> : vos réponses et scores (pour votre progression et les statistiques anonymes des créateurs), vos notes et commentaires (publiés avec votre pseudo).</li>
     </ul>
     <h2>Finalité et base légale</h2>
     <p>Fournir le service que vous demandez en créant un compte (exécution du service, article 6.1.b du RGPD) et assurer sa sécurité (intérêt légitime, article 6.1.f).</p>
@@ -18,6 +19,6 @@
     <h2>Durée de conservation</h2>
     <p>Tant que votre compte existe. Un compte jamais activé est supprimé au bout de 30 jours.</p>
     <h2>Vos droits</h2>
-    <p>Vous pouvez modifier votre pseudo et votre mot de passe, et supprimer votre compte à tout moment depuis <a href="{{ url_for('account.profile') }}">votre profil</a> : la suppression efface vos données immédiatement. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
+    <p>Vous pouvez modifier votre pseudo et votre mot de passe, et supprimer votre compte à tout moment depuis <a href="{{ url_for('account.profile') }}">votre profil</a> : la suppression efface vos données personnelles et vos avis immédiatement ; vos résultats de quiz ne sont conservés que de façon anonyme, pour les statistiques. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
   </article>
 {% endblock %}

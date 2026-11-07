@@ -8,6 +8,22 @@
     · Membre depuis le {{ current_user.created_at.strftime('%d/%m/%Y') }}
   </p>
 
+  <section class="carte mt-8" aria-labelledby="titre-parties">
+    <h2 id="titre-parties">Mes dernières parties</h2>
+    {% if parties %}
+      <ul class="mt-4 divide-y divide-slate-200 dark:divide-nuit-700">
+        {% for partie in parties %}
+          <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+            <a href="{{ url_for('quiz.result', token=partie.token) }}">{{ partie.quiz.title }}</a>
+            <span class="font-mono">{{ partie.score }} / {{ partie.total }} · {{ partie.finished_at.strftime('%d/%m/%Y') }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="mt-2">Aucune partie terminée pour l'instant. <a href="{{ url_for('quiz.catalog_page') }}">Choisir un quiz</a></p>
+    {% endif %}
+  </section>
+
   <div class="mt-8 grid gap-6 lg:grid-cols-2">
     <section class="carte" aria-labelledby="titre-pseudo">
       <h2 id="titre-pseudo">Pseudo</h2>
@@ -31,7 +47,7 @@
 
     <section class="carte border-red-300 dark:border-red-400 lg:col-span-2" aria-labelledby="titre-suppr">
       <h2 id="titre-suppr">Supprimer mon compte</h2>
-      <p class="mt-2 text-slate-700 dark:text-slate-300">Votre compte et toutes vos données seront effacés immédiatement. Cette action est définitive.</p>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">Votre compte et vos données personnelles seront effacés immédiatement ; vos résultats ne seront conservés que de façon anonyme. Cette action est définitive.</p>
       <form method="post" action="{{ url_for('account.delete_account') }}" novalidate class="mt-4 max-w-md"
             data-confirmer="Supprimer définitivement votre compte ?">
         {{ delete_form.hidden_tag() }}

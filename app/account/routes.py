@@ -8,7 +8,7 @@ from werkzeug.wrappers import Response
 
 from app.auth.forms import ChangePasswordForm, DeleteAccountForm, UsernameForm
 from app.extensions import limiter
-from app.services import accounts
+from app.services import accounts, play
 
 bp = Blueprint("account", __name__)
 
@@ -28,7 +28,11 @@ def _page(
 ) -> tuple[str, int]:
     pseudo, mdp, suppr = formulaires
     page = render_template(
-        "account/profile.html", username_form=pseudo, password_form=mdp, delete_form=suppr
+        "account/profile.html",
+        username_form=pseudo,
+        password_form=mdp,
+        delete_form=suppr,
+        parties=play.historique(current_user),
     )
     return page, statut
 

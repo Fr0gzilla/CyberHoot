@@ -1,0 +1,64 @@
+{
+  "title": "Des mots de passe solides",
+  "description": "Longueur, réutilisation, gestionnaire, double authentification : les bons réflexes pour protéger vos comptes.",
+  "category": "mots-de-passe",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "text": "Lequel de ces mots de passe est le plus robuste ?",
+      "explanation": "La longueur compte plus que la complexité : une phrase de passe de plusieurs mots sans lien entre eux est à la fois très difficile à deviner et facile à retenir. « P@ssw0rd! » et « Azerty2026 » figurent dans toutes les listes testées par les attaquants.",
+      "options": [
+        {"text": "P@ssw0rd!"},
+        {"text": "Azerty2026"},
+        {"text": "girafe-tambour-orage-citron", "correct": true},
+        {"text": "Marseille13"}
+      ]
+    },
+    {
+      "text": "Pourquoi ne faut-il pas réutiliser le même mot de passe sur plusieurs sites ?",
+      "explanation": "Quand un site se fait voler sa base de données, les attaquants essaient automatiquement les couples e-mail et mot de passe volés sur d'autres services : c'est le « credential stuffing ». Un mot de passe unique par site limite les dégâts à un seul compte.",
+      "options": [
+        {"text": "Parce que les sites l'interdisent"},
+        {"text": "Parce qu'une fuite sur un site ouvre alors tous vos autres comptes", "correct": true},
+        {"text": "Parce que le mot de passe s'use à force d'être utilisé"}
+      ]
+    },
+    {
+      "text": "Qu'est-ce que la double authentification (2FA) ?",
+      "explanation": "En plus du mot de passe, on demande une seconde preuve : un code d'une application, une clé de sécurité ou une notification à valider. Même si votre mot de passe fuit, l'attaquant reste bloqué sans ce second facteur.",
+      "options": [
+        {"text": "Taper deux fois son mot de passe"},
+        {"text": "Une seconde preuve d'identité en plus du mot de passe", "correct": true},
+        {"text": "Avoir deux comptes sur le même site"}
+      ]
+    },
+    {
+      "text": "Quelles pratiques sont recommandées pour gérer ses mots de passe ? (plusieurs réponses)",
+      "explanation": "Un gestionnaire de mots de passe génère et retient un mot de passe unique et long pour chaque site ; vous ne mémorisez plus qu'un seul mot de passe principal, très solide. Le carnet près de l'écran et le fichier « motsdepasse.txt » sont à la portée du premier venu ou d'un logiciel malveillant.",
+      "options": [
+        {"text": "Utiliser un gestionnaire de mots de passe", "correct": true},
+        {"text": "Choisir un mot de passe principal long et unique pour ce gestionnaire", "correct": true},
+        {"text": "Noter ses mots de passe sur un papier collé à l'écran"},
+        {"text": "Les garder dans un fichier texte sur le bureau"}
+      ]
+    },
+    {
+      "text": "Un site vous oblige à changer de mot de passe tous les mois, même sans incident. Ce que disent les recommandations actuelles :",
+      "explanation": "L'ANSSI comme le NIST ne recommandent plus le changement périodique systématique : il pousse à des variantes prévisibles (« Ete2025 » puis « Automne2025 »). On change un mot de passe quand il y a un soupçon de compromission.",
+      "options": [
+        {"text": "C'est indispensable"},
+        {"text": "C'est inutile, voire contre-productif, sans soupçon de fuite", "correct": true},
+        {"text": "Il faut le changer chaque semaine"}
+      ]
+    },
+    {
+      "text": "Comment savoir si votre adresse e-mail apparaît dans une fuite de données connue ?",
+      "explanation": "Des services publics de référence, comme « Have I Been Pwned », recensent les fuites connues et permettent de vérifier une adresse sans donner de mot de passe. Ne saisissez jamais votre mot de passe sur un site qui prétend vérifier s'il a fuité.",
+      "options": [
+        {"text": "En tapant mon mot de passe sur un site qui prétend le vérifier"},
+        {"text": "En vérifiant mon adresse sur un service reconnu de recensement des fuites", "correct": true},
+        {"text": "Il n'existe aucun moyen de le savoir"}
+      ]
+    }
+  ]
+}

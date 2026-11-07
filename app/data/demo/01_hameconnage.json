@@ -1,0 +1,63 @@
+{
+  "title": "Repérer un message d'hameçonnage",
+  "description": "SMS de colis, faux e-mails de banque, appels pressants : six situations du quotidien pour apprendre à reconnaître une tentative d'arnaque.",
+  "category": "hameconnage",
+  "difficulty": "easy",
+  "questions": [
+    {
+      "text": "Un SMS vous annonce qu'un colis est bloqué et demande 1,99 € de frais de livraison via un lien. Que faites-vous ?",
+      "explanation": "C'est une arnaque très répandue : le petit montant sert à récupérer votre numéro de carte bancaire. Ne cliquez pas, supprimez le message et signalez-le en le transférant gratuitement au 33700 (service officiel de signalement des SMS et appels indésirables).",
+      "options": [
+        {"text": "Je paie, le montant est faible"},
+        {"text": "Je clique sur le lien pour vérifier le suivi"},
+        {"text": "Je supprime le message et je le signale au 33700", "correct": true},
+        {"text": "Je réponds STOP"}
+      ]
+    },
+    {
+      "text": "Quels indices doivent vous alerter dans un e-mail qui semble venir de votre banque ? (plusieurs réponses)",
+      "explanation": "Urgence artificielle, adresse d'expéditeur qui imite le vrai domaine et demande d'identifiants sont les signes classiques. Une banque ne demande jamais vos codes par e-mail. Le logo, lui, se copie en un clic : sa présence ne prouve rien.",
+      "options": [
+        {"text": "Un ton urgent : « votre compte sera bloqué sous 24 h »", "correct": true},
+        {"text": "Une adresse d'expéditeur du type service@banque-securite-client.com", "correct": true},
+        {"text": "La demande de saisir vos identifiants via un lien", "correct": true},
+        {"text": "La présence du logo de la banque"}
+      ]
+    },
+    {
+      "text": "Vous survolez un lien sans cliquer : l'adresse affichée est « https://impots.gouv.fr.verification-dossier.com ». Ce site appartient à…",
+      "explanation": "Le vrai domaine se lit juste avant la première barre « / », en partant de la droite : ici « verification-dossier.com ». Le début « impots.gouv.fr » n'est qu'un sous-domaine choisi par l'escroc pour tromper l'œil.",
+      "options": [
+        {"text": "L'administration fiscale"},
+        {"text": "Le propriétaire de verification-dossier.com", "correct": true},
+        {"text": "Impossible à savoir sans cliquer"}
+      ]
+    },
+    {
+      "text": "Le cadenas affiché dans la barre d'adresse garantit que le site est légitime.",
+      "explanation": "Faux. Le cadenas (HTTPS) garantit seulement que la connexion est chiffrée entre vous et le site. Un site d'escroquerie peut tout à fait obtenir un certificat gratuit et afficher le cadenas.",
+      "options": [
+        {"text": "Vrai"},
+        {"text": "Faux", "correct": true}
+      ]
+    },
+    {
+      "text": "Un « conseiller bancaire » vous appelle : une opération suspecte est en cours et il vous demande de valider un code reçu par SMS pour « l'annuler ». Que faites-vous ?",
+      "explanation": "C'est la fraude au faux conseiller : le code reçu sert en réalité à valider un paiement ou l'ajout d'un appareil par l'escroc. Ne communiquez jamais un code reçu par SMS. Raccrochez et rappelez votre banque au numéro habituel (au dos de votre carte).",
+      "options": [
+        {"text": "Je lui donne le code pour bloquer l'opération"},
+        {"text": "Je raccroche et j'appelle ma banque au numéro habituel", "correct": true},
+        {"text": "Je lui demande son nom puis je donne le code"}
+      ]
+    },
+    {
+      "text": "Vous avez cliqué sur un lien d'hameçonnage et saisi votre mot de passe. Quelle est la première chose à faire ?",
+      "explanation": "Changez immédiatement le mot de passe du compte concerné (et partout où vous l'aviez réutilisé), puis activez la double authentification. Si des données bancaires ont été saisies, faites opposition auprès de votre banque. Le site cybermalveillance.gouv.fr guide pas à pas.",
+      "options": [
+        {"text": "Attendre de voir si quelque chose se passe"},
+        {"text": "Changer tout de suite ce mot de passe, partout où il était utilisé", "correct": true},
+        {"text": "Supprimer l'e-mail pour effacer les traces"}
+      ]
+    }
+  ]
+}

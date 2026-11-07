@@ -10,11 +10,11 @@
         expliqués et validés, à faire seul ou en direct avec toute une salle.
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
+        <a class="bouton-principal" href="{{ url_for('quiz.catalog_page') }}">Voir les quiz</a>
         {% if current_user.is_authenticated %}
-          <a class="bouton-principal" href="{{ url_for('account.profile') }}">Mon espace</a>
+          <a class="bouton-secondaire" href="{{ url_for('account.profile') }}">Mon espace</a>
         {% else %}
-          <a class="bouton-principal" href="{{ url_for('auth.register') }}">Créer un compte gratuit</a>
-          <a class="bouton-secondaire" href="{{ url_for('auth.login') }}">J'ai déjà un compte</a>
+          <a class="bouton-secondaire" href="{{ url_for('auth.register') }}">Créer un compte gratuit</a>
         {% endif %}
       </div>
     </div>
@@ -24,7 +24,7 @@
       <ul class="mt-5 grid gap-3 sm:grid-cols-2" aria-label="Exemple de réponses">
         <li class="rounded-xl bg-red-700 px-4 py-3 font-semibold text-white">▲ Je paie, c'est peu</li>
         <li class="rounded-xl bg-sky-700 px-4 py-3 font-semibold text-white">◆ Je clique pour vérifier</li>
-        <li class="rounded-xl bg-amber-500 px-4 py-3 font-semibold text-nuit-950">● Je réponds STOP</li>
+        <li class="rounded-xl bg-amber-400 px-4 py-3 font-semibold text-nuit-950">● Je réponds STOP</li>
         <li class="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white">■ Je supprime et je signale au 33700</li>
       </ul>
       <p class="mt-4 text-sm text-slate-600 dark:text-slate-300">Chaque réponse est suivie d'une explication.</p>

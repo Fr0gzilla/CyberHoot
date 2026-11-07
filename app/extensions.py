@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, event
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase
 
 # Noms de contraintes stables : Alembic produit les mêmes noms sur MySQL et SQLite.
@@ -31,3 +34,12 @@ login_manager = LoginManager()
 # (connexion, inscription, mot de passe) ont leurs propres limites. Une limite globale
 # bloquerait une classe entière derrière une même adresse IP, fichiers statiques compris.
 limiter = Limiter(key_func=get_remote_address)
+
+
+@event.listens_for(Engine, "connect")
+def _sqlite_cles_etrangeres(connexion: Any, _record: Any) -> None:
+    """SQLite n'applique les clés étrangères (ON DELETE…) que sur demande, comme MySQL."""
+    if type(connexion).__module__.startswith("sqlite3"):
+        curseur = connexion.cursor()
+        curseur.execute("PRAGMA foreign_keys=ON")
+        curseur.close()

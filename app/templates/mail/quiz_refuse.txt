@@ -1,0 +1,11 @@
+Bonjour {{ user.username }},
+
+Votre quiz « {{ quiz.title }} » doit être revu avant publication. Motif indiqué par l'administrateur :
+
+{{ quiz.rejection_reason }}
+
+Vous pouvez le modifier puis le soumettre à nouveau depuis votre espace créateur :
+
+{{ lien }}
+
+— L'équipe CyberHoot

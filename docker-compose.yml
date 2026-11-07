@@ -49,13 +49,50 @@ services:
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SCAN_BACKEND: ${SCAN_BACKEND:-simule}
+      VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY:-}
+      RUN_MIGRATIONS: "1"
     secrets: [secret_key, db_password]
+    volumes:
+      - uploads:/data/uploads
     read_only: true
     tmpfs:
       - /tmp
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
+    networks: [front, back]
+    restart: unless-stopped
+
+  # Analyse antivirus des images envoyées, en tâche de fond (même image que l'application).
+  worker:
+    image: cyberhoot:latest
+    depends_on:
+      app:
+        condition: service_healthy
+    command: ["flask", "--app", "wsgi", "analyser-medias", "--boucle"]
+    environment:
+      APP_ENV: production
+      SECRET_KEY_FILE: /run/secrets/secret_key
+      DB_HOST: db
+      DB_NAME: cyberhoot
+      DB_USER: cyberhoot
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      SCAN_BACKEND: ${SCAN_BACKEND:-simule}
+      VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY:-}
+      RUN_MIGRATIONS: "0"
+    secrets: [secret_key, db_password]
+    volumes:
+      - uploads:/data/uploads
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      disable: true
+    # Réseau interne pour la base ; « front » seulement pour joindre VirusTotal si activé.
     networks: [front, back]
     restart: unless-stopped
 
@@ -100,6 +137,7 @@ secrets:
 
 volumes:
   db-data:
+  uploads:
 
 networks:
   front:

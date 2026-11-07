@@ -63,3 +63,160 @@ INSERT INTO `role` (id, name, label) VALUES (3, 'admin', 'Administrateur');
 
 INSERT INTO alembic_version (version_num) VALUES ('0001');
 
+-- Running upgrade 0001 -> 0002
+
+CREATE TABLE category (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    slug VARCHAR(40) NOT NULL, 
+    name VARCHAR(80) NOT NULL, 
+    description VARCHAR(255) NOT NULL, 
+    position INTEGER NOT NULL, 
+    CONSTRAINT pk_category PRIMARY KEY (id), 
+    CONSTRAINT uq_category_slug UNIQUE (slug)
+);
+
+CREATE TABLE media (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    uid VARCHAR(32) NOT NULL, 
+    owner_id INTEGER, 
+    mime_type VARCHAR(30) NOT NULL, 
+    size INTEGER NOT NULL, 
+    sha256 VARCHAR(64) NOT NULL, 
+    status ENUM('pending','clean','rejected') NOT NULL, 
+    scan_detail VARCHAR(255), 
+    created_at DATETIME NOT NULL, 
+    scanned_at DATETIME, 
+    CONSTRAINT pk_media PRIMARY KEY (id), 
+    CONSTRAINT fk_media_owner_id_user FOREIGN KEY(owner_id) REFERENCES user (id) ON DELETE SET NULL, 
+    CONSTRAINT uq_media_uid UNIQUE (uid)
+);
+
+CREATE INDEX ix_media_owner_id ON media (owner_id);
+
+CREATE INDEX ix_media_sha256 ON media (sha256);
+
+CREATE INDEX ix_media_status ON media (status);
+
+CREATE TABLE quiz (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    creator_id INTEGER, 
+    category_id INTEGER NOT NULL, 
+    title VARCHAR(120) NOT NULL, 
+    description VARCHAR(500) NOT NULL, 
+    difficulty ENUM('easy','medium','hard') NOT NULL, 
+    status ENUM('draft','pending','published','rejected') NOT NULL, 
+    rejection_reason VARCHAR(500), 
+    created_at DATETIME NOT NULL, 
+    updated_at DATETIME NOT NULL, 
+    submitted_at DATETIME, 
+    published_at DATETIME, 
+    CONSTRAINT pk_quiz PRIMARY KEY (id), 
+    CONSTRAINT fk_quiz_category_id_category FOREIGN KEY(category_id) REFERENCES category (id) ON DELETE RESTRICT, 
+    CONSTRAINT fk_quiz_creator_id_user FOREIGN KEY(creator_id) REFERENCES user (id) ON DELETE SET NULL
+);
+
+CREATE INDEX ix_quiz_category_id ON quiz (category_id);
+
+CREATE INDEX ix_quiz_creator_id ON quiz (creator_id);
+
+CREATE INDEX ix_quiz_status ON quiz (status);
+
+CREATE TABLE play_session (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    token VARCHAR(43) NOT NULL, 
+    user_id INTEGER, 
+    quiz_id INTEGER NOT NULL, 
+    question_ids JSON NOT NULL, 
+    current_index INTEGER NOT NULL, 
+    score INTEGER NOT NULL, 
+    total INTEGER NOT NULL, 
+    started_at DATETIME NOT NULL, 
+    finished_at DATETIME, 
+    CONSTRAINT pk_play_session PRIMARY KEY (id), 
+    CONSTRAINT ck_play_session_index_positif CHECK (current_index >= 0), 
+    CONSTRAINT ck_play_session_score_positif CHECK (score >= 0), 
+    CONSTRAINT fk_play_session_quiz_id_quiz FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_play_session_user_id_user FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE SET NULL, 
+    CONSTRAINT uq_play_session_token UNIQUE (token)
+);
+
+CREATE INDEX ix_play_session_quiz_id ON play_session (quiz_id);
+
+CREATE INDEX ix_play_session_user_id ON play_session (user_id);
+
+CREATE TABLE question (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    quiz_id INTEGER NOT NULL, 
+    position INTEGER NOT NULL, 
+    text VARCHAR(500) NOT NULL, 
+    explanation TEXT NOT NULL, 
+    media_id INTEGER, 
+    media_alt VARCHAR(200), 
+    CONSTRAINT pk_question PRIMARY KEY (id), 
+    CONSTRAINT fk_question_media_id_media FOREIGN KEY(media_id) REFERENCES media (id) ON DELETE SET NULL, 
+    CONSTRAINT fk_question_quiz_id_quiz FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE, 
+    CONSTRAINT quiz_position UNIQUE (quiz_id, position)
+);
+
+CREATE TABLE review (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    user_id INTEGER NOT NULL, 
+    quiz_id INTEGER NOT NULL, 
+    rating INTEGER NOT NULL, 
+    comment VARCHAR(1000), 
+    created_at DATETIME NOT NULL, 
+    updated_at DATETIME NOT NULL, 
+    CONSTRAINT pk_review PRIMARY KEY (id), 
+    CONSTRAINT ck_review_note_1_a_5 CHECK (rating BETWEEN 1 AND 5), 
+    CONSTRAINT fk_review_quiz_id_quiz FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_review_user_id_user FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE, 
+    CONSTRAINT un_avis_par_joueur UNIQUE (user_id, quiz_id)
+);
+
+CREATE INDEX ix_review_quiz_id ON review (quiz_id);
+
+CREATE TABLE answer_option (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    question_id INTEGER NOT NULL, 
+    position INTEGER NOT NULL, 
+    text VARCHAR(300) NOT NULL, 
+    is_correct BOOL NOT NULL, 
+    CONSTRAINT pk_answer_option PRIMARY KEY (id), 
+    CONSTRAINT fk_answer_option_question_id_question FOREIGN KEY(question_id) REFERENCES question (id) ON DELETE CASCADE, 
+    CONSTRAINT question_position UNIQUE (question_id, position)
+);
+
+CREATE TABLE play_answer (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    session_id INTEGER NOT NULL, 
+    position INTEGER NOT NULL, 
+    question_id INTEGER, 
+    selected_ids JSON NOT NULL, 
+    is_correct BOOL NOT NULL, 
+    answered_at DATETIME NOT NULL, 
+    CONSTRAINT pk_play_answer PRIMARY KEY (id), 
+    CONSTRAINT fk_play_answer_question_id_question FOREIGN KEY(question_id) REFERENCES question (id) ON DELETE SET NULL, 
+    CONSTRAINT fk_play_answer_session_id_play_session FOREIGN KEY(session_id) REFERENCES play_session (id) ON DELETE CASCADE, 
+    CONSTRAINT session_position UNIQUE (session_id, position)
+);
+
+CREATE INDEX ix_play_answer_question_id ON play_answer (question_id);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (1, 'hameconnage', 'Hameçonnage et ingénierie sociale', 'Repérer les faux messages, appels et sites qui cherchent à vous manipuler.', 1);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (2, 'mots-de-passe', 'Mots de passe et authentification', 'Choisir, retenir et protéger ses mots de passe ; la double authentification.', 2);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (3, 'securite-web', 'Sécurité web', 'Naviguer prudemment : HTTPS, téléchargements, extensions, failles courantes.', 3);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (4, 'logiciels-malveillants', 'Logiciels malveillants', 'Virus, rançongiciels, chevaux de Troie : comment ils arrivent et comment s''en protéger.', 4);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (5, 'reseaux-wifi', 'Réseaux et Wi-Fi', 'Wi-Fi public, box, VPN : sécuriser ses connexions.', 5);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (6, 'donnees-rgpd', 'Données personnelles et RGPD', 'Protéger sa vie privée et connaître ses droits.', 6);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (7, 'cryptographie', 'Cryptographie', 'Chiffrement, signatures, certificats : les bases expliquées simplement.', 7);
+
+INSERT INTO category (id, slug, name, description, position) VALUES (8, 'bonnes-pratiques', 'Bonnes pratiques au quotidien', 'Mises à jour, sauvegardes, verrouillage : les gestes qui protègent.', 8);
+
+UPDATE alembic_version SET version_num='0002' WHERE alembic_version.version_num = '0001';
+

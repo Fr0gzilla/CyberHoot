@@ -69,4 +69,22 @@
       text-sm font-semibold text-phosphore-900 dark:border-phosphore-400/40 dark:bg-nuit-800
       dark:text-phosphore-300;
   }
+  /* Réponse choisie : bien visible, au clavier comme à la souris. */
+  .choix:has(input:checked) { @apply outline outline-4 outline-offset-2 outline-slate-900 dark:outline-white; }
+  .choix:focus-within { @apply outline outline-[3px] outline-offset-2 outline-phosphore-600 dark:outline-phosphore-300; }
 }
+
+/* Barre de progression : largeur par paliers de 10 % (pas de style en ligne avec la CSP).
+   Hors des couches Tailwind : ces classes sont construites dans les gabarits et ne doivent
+   pas être retirées à la compilation. */
+.barre-0 { width: 0%; }
+.barre-10 { width: 10%; }
+.barre-20 { width: 20%; }
+.barre-30 { width: 30%; }
+.barre-40 { width: 40%; }
+.barre-50 { width: 50%; }
+.barre-60 { width: 60%; }
+.barre-70 { width: 70%; }
+.barre-80 { width: 80%; }
+.barre-90 { width: 90%; }
+.barre-100 { width: 100%; }

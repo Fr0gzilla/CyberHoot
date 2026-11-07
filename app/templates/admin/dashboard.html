@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "macros/quiz.html" import meta %}
+{% block title %}Administration{% endblock %}
+{% block content %}
+  <h1>Administration</h1>
+  <section class="mt-6" aria-labelledby="titre-attente">
+    <h2 id="titre-attente">À valider <span class="etiquette ml-2">{{ en_attente|length }}</span></h2>
+    {% if en_attente %}
+      <ul class="mt-4 space-y-4">
+        {% for quiz in en_attente %}
+          <li class="carte flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h3 class="text-lg">{{ quiz.title }}</h3>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">par {{ quiz.creator.username if quiz.creator else 'compte supprimé' }} · soumis le {{ quiz.submitted_at.strftime('%d/%m/%Y à %H:%M') if quiz.submitted_at else '—' }} (UTC)</p>
+              <div class="mt-2 flex flex-wrap gap-2">{{ meta(quiz) }}</div>
+            </div>
+            <a class="bouton-principal" href="{{ url_for('admin.review', quiz_id=quiz.id) }}">Relire<span class="sr-only"> « {{ quiz.title }} »</span></a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="carte mt-4">Rien à valider pour le moment.</p>
+    {% endif %}
+  </section>
+
+  <section class="mt-10" aria-labelledby="titre-publies">
+    <h2 id="titre-publies">Publiés <span class="etiquette ml-2">{{ publies|length }}</span></h2>
+    <ul class="mt-4 divide-y divide-slate-200 dark:divide-nuit-700">
+      {% for quiz in publies %}
+        <li class="flex flex-wrap items-center justify-between gap-2 py-3">
+          <a href="{{ url_for('quiz.detail', quiz_id=quiz.id) }}">{{ quiz.title }}</a>
+          <a class="bouton-secondaire px-3 py-1.5 text-sm" href="{{ url_for('admin.review', quiz_id=quiz.id) }}">Gérer<span class="sr-only"> « {{ quiz.title }} »</span></a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  <p class="mt-10 text-sm text-slate-600 dark:text-slate-300">Gestion des comptes, catégories et badges : version 2.2. En attendant : <code class="font-mono">flask --app wsgi donner-role --email … --role creator</code>.</p>
+{% endblock %}

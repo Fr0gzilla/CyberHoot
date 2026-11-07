@@ -1,0 +1,15 @@
+{# Réponses d'une question corrigée : bonnes réponses et choix du joueur. #}
+<ul class="mt-4 space-y-2">
+  {% for option in question.options %}
+    {% set choisie = option.id in reponse.selected_ids %}
+    <li class="flex items-start gap-3 rounded-xl border px-4 py-3
+               {{ 'border-phosphore-700 bg-phosphore-50 dark:border-phosphore-400 dark:bg-nuit-800' if option.is_correct else 'border-slate-200 dark:border-nuit-700' }}">
+      <span aria-hidden="true" class="font-mono">{{ '✓' if option.is_correct else ('✗' if choisie else '·') }}</span>
+      <span>
+        {{ option.text }}
+        {% if option.is_correct %}<span class="ml-1 font-semibold text-phosphore-800 dark:text-phosphore-300">— bonne réponse</span>{% endif %}
+        {% if choisie %}<span class="ml-1 text-sm text-slate-600 dark:text-slate-300">(votre choix)</span>{% endif %}
+      </span>
+    </li>
+  {% endfor %}
+</ul>

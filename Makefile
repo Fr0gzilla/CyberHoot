@@ -3,7 +3,7 @@
 COMPOSE := docker compose
 TEST_IMAGE := cyberhoot:test
 
-.PHONY: help secrets install verify test test-mysql smoke up down logs admin schema lock css clean
+.PHONY: help secrets install verify test test-mysql demo smoke up down logs admin schema lock css clean
 
 help: ## Affiche cette aide
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -54,6 +54,10 @@ smoke: up ## Démarre la pile et vérifie qu'elle répond
 
 admin: ## Crée un compte administrateur (questions interactives)
 	$(COMPOSE) exec app flask --app wsgi creer-admin
+
+demo: ## Ajoute les quiz de démonstration (questions interactives)
+	@read -p "Adresse du compte auteur (créateur ou admin) : " email; \
+	$(COMPOSE) exec app flask --app wsgi charger-demo --email "$$email"
 
 schema: ## Régénère docs/modele/schema.sql depuis les migrations
 	docker build -q --target test -t $(TEST_IMAGE) . >/dev/null

@@ -21,7 +21,14 @@
         CyberHoot
       </a>
       <ul class="flex flex-wrap items-center gap-1">
+        <li><a class="lien-nav" href="{{ url_for('quiz.catalog_page') }}">Quiz</a></li>
         {% if current_user.is_authenticated %}
+          {% if current_user.has_role('creator') or current_user.has_role('admin') %}
+            <li><a class="lien-nav" href="{{ url_for('creator.dashboard') }}">Créer</a></li>
+          {% endif %}
+          {% if current_user.has_role('admin') %}
+            <li><a class="lien-nav" href="{{ url_for('admin.dashboard') }}">Administration</a></li>
+          {% endif %}
           <li><a class="lien-nav" href="{{ url_for('account.profile') }}">Mon profil</a></li>
           <li>
             <form method="post" action="{{ url_for('auth.logout') }}">

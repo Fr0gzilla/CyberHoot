@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "macros/quiz.html" import FORMES, COULEURS %}
+{% block title %}{{ partie.quiz.title }} — question {{ partie.current_index + 1 }}{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-3xl">
+    <p class="font-mono text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+      {{ partie.quiz.title }} · Question {{ partie.current_index + 1 }} sur {{ partie.total }}
+    </p>
+    <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-nuit-800" role="progressbar"
+         aria-valuemin="0" aria-valuemax="{{ partie.total }}" aria-valuenow="{{ partie.current_index }}" aria-label="Progression">
+      <div class="h-2 bg-phosphore-600 dark:bg-phosphore-400 barre-{{ (100 * partie.current_index // partie.total) // 10 * 10 }}"></div>
+    </div>
+
+    <form method="post" class="carte mt-6" novalidate>
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="question" value="{{ question.id }}">
+      <fieldset>
+        <legend class="text-xl font-bold sm:text-2xl">{{ question.text }}</legend>
+        {% include "quiz/_image.html" %}
+        <p class="mt-3 text-sm text-slate-600 dark:text-slate-300">
+          {{ 'Plusieurs réponses sont attendues : cochez toutes les bonnes.' if question.multiple else 'Une seule réponse.' }}
+        </p>
+        {% if erreur %}<p class="champ-erreur mt-3" role="alert">{{ erreur }}</p>{% endif %}
+        <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+          {% for option in question.options %}
+            <li>
+              <label class="choix flex min-h-[3.5rem] cursor-pointer items-center gap-3 rounded-xl px-4 py-3 font-semibold {{ COULEURS[loop.index0 % 6] }}">
+                <input type="{{ 'checkbox' if question.multiple else 'radio' }}" name="choix" value="{{ option.id }}" class="h-5 w-5 shrink-0">
+                <span aria-hidden="true">{{ FORMES[loop.index0 % 6] }}</span>
+                <span>{{ option.text }}</span>
+              </label>
+            </li>
+          {% endfor %}
+        </ul>
+      </fieldset>
+      <button type="submit" class="bouton-principal mt-6 w-full sm:w-auto">Valider ma réponse</button>
+    </form>
+  </div>
+{% endblock %}

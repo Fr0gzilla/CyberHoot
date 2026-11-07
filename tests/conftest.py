@@ -23,7 +23,7 @@ from sqlalchemy import create_engine, delete, text
 from app import create_app
 from app.config import charger_config
 from app.extensions import db, limiter
-from app.models import AccountToken, User, user_role
+from app.models import RoleName, User
 from app.services import accounts, mail
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -55,8 +55,9 @@ def database_url(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
 
 
 @pytest.fixture
-def app(database_url: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[Flask]:
+def app(database_url: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Iterator[Flask]:
     monkeypatch.setenv("TEST_DATABASE_URL", database_url)
+    monkeypatch.setenv("UPLOAD_DIR", str(tmp_path / "uploads"))
     application = create_app(charger_config("testing"))
     application.test_client_class = ClientIsole
     with application.app_context():
@@ -64,10 +65,10 @@ def app(database_url: str, monkeypatch: pytest.MonkeyPatch) -> Iterator[Flask]:
         mail.boite_envoi.clear()
         yield application
         db.session.remove()
-        # Nettoyage : tout sauf les données de référence (rôles).
-        db.session.execute(delete(user_role))
-        db.session.execute(delete(AccountToken))
-        db.session.execute(delete(User))
+        # Nettoyage : tout sauf les données de référence (rôles, catégories).
+        for table in reversed(db.metadata.sorted_tables):
+            if table.name not in {"role", "category"}:
+                db.session.execute(delete(table))
         db.session.commit()
 
 
@@ -130,3 +131,32 @@ def connecter(client: FlaskClient, email: str = "alice@example.org", mdp: str = 
         "/compte/connexion",
         data={"email": email, "password": mdp, "csrf_token": jeton},
     )
+
+
+def creer_compte(app: Flask, pseudo: str, *roles: RoleName) -> User:
+    """Compte activé avec les rôles donnés (en plus de joueur)."""
+    from sqlalchemy import select
+
+    from app.models import Role, utcnow
+
+    user = User(
+        username=pseudo,
+        email=f"{pseudo}@example.org",
+        password_hash=accounts.passwords.hacher(MOT_DE_PASSE),
+        email_verified_at=utcnow(),
+    )
+    noms = {RoleName.PLAYER.value, *(r.value for r in roles)}
+    user.roles.extend(db.session.scalars(select(Role).where(Role.name.in_(noms))))
+    db.session.add(user)
+    db.session.commit()
+    return user
+
+
+@pytest.fixture
+def createur(app: Flask) -> User:
+    return creer_compte(app, "createur", RoleName.CREATOR)
+
+
+@pytest.fixture
+def admin(app: Flask) -> User:
+    return creer_compte(app, "chef", RoleName.CREATOR, RoleName.ADMIN)
