@@ -1,0 +1,12 @@
+{
+  "name": "cyberhoot-assets",
+  "private": true,
+  "description": "Compilation locale de la feuille de style (Tailwind CSS)",
+  "scripts": {
+    "build:css": "tailwindcss -i assets/app.css -o app/static/css/app.css --minify",
+    "watch:css": "tailwindcss -i assets/app.css -o app/static/css/app.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

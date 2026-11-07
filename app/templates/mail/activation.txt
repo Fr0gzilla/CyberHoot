@@ -1,0 +1,9 @@
+Bonjour {{ user.username }},
+
+Bienvenue sur CyberHoot ! Pour activer votre compte, ouvrez ce lien :
+
+{{ lien }}
+
+Si vous n'êtes pas à l'origine de cette inscription, ignorez simplement ce message.
+
+— L'équipe CyberHoot

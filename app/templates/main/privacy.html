@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Confidentialité{% endblock %}
+{% block content %}
+  <article class="carte mx-auto max-w-3xl space-y-4">
+    <h1>Politique de confidentialité</h1>
+    <p>CyberHoot ne collecte que ce qui est nécessaire au fonctionnement de votre compte.</p>
+    <h2>Données collectées</h2>
+    <ul class="list-disc space-y-1 pl-6">
+      <li><strong>Pseudo</strong> : affiché publiquement (classements).</li>
+      <li><strong>Adresse e-mail</strong> : activation du compte, réinitialisation du mot de passe, alertes de sécurité. Jamais affichée ni transmise à des tiers.</li>
+      <li><strong>Mot de passe</strong> : conservé uniquement sous forme d'empreinte (Argon2id), jamais en clair.</li>
+      <li><strong>Dates de création et de dernière connexion</strong> : sécurité du compte.</li>
+    </ul>
+    <h2>Finalité et base légale</h2>
+    <p>Fournir le service que vous demandez en créant un compte (exécution du service, article 6.1.b du RGPD) et assurer sa sécurité (intérêt légitime, article 6.1.f).</p>
+    <h2>Cookies</h2>
+    <p>Un seul cookie de session, strictement nécessaire à la connexion, et un cookie « rester connecté » (30 jours) si vous cochez la case. Aucun cookie publicitaire ni de mesure d'audience. Votre choix de thème reste dans votre navigateur.</p>
+    <h2>Durée de conservation</h2>
+    <p>Tant que votre compte existe. Un compte jamais activé est supprimé au bout de 30 jours.</p>
+    <h2>Vos droits</h2>
+    <p>Vous pouvez modifier votre pseudo et votre mot de passe, et supprimer votre compte à tout moment depuis <a href="{{ url_for('account.profile') }}">votre profil</a> : la suppression efface vos données immédiatement. Vous pouvez aussi saisir la CNIL (cnil.fr).</p>
+  </article>
+{% endblock %}

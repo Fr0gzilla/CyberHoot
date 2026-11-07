@@ -1,0 +1,7 @@
+Bonjour {{ user.username }},
+
+Le mot de passe de votre compte CyberHoot vient d'être modifié, et vos autres sessions ont été déconnectées.
+
+Si vous n'êtes pas à l'origine de ce changement, réinitialisez immédiatement votre mot de passe depuis la page « Mot de passe oublié ».
+
+— L'équipe CyberHoot

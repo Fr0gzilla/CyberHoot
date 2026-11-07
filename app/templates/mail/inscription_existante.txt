@@ -1,0 +1,11 @@
+Bonjour {{ user.username }},
+
+Quelqu'un vient d'essayer de créer un compte CyberHoot avec votre adresse e-mail, qui en a déjà un.
+
+Si c'était vous et que vous avez oublié votre mot de passe, vous pouvez le réinitialiser ici :
+
+{{ lien }}
+
+Sinon, vous n'avez rien à faire : votre compte n'a pas été modifié.
+
+— L'équipe CyberHoot

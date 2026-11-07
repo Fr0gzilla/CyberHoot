@@ -1,0 +1,9 @@
+Bonjour {{ user.username }},
+
+Pour choisir un nouveau mot de passe, ouvrez ce lien (valable {{ duree }} minutes, utilisable une seule fois) :
+
+{{ lien }}
+
+Si vous n'avez rien demandé, ignorez ce message : votre mot de passe actuel reste valable.
+
+— L'équipe CyberHoot

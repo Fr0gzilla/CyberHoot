@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Accueil{% endblock %}
+{% block content %}
+  <section class="grid items-center gap-10 py-6 md:grid-cols-2 md:py-12">
+    <div>
+      <p class="etiquette mb-4">&gt; sensibilisation_cyber</p>
+      <h1 class="lueur">Apprenez les bons réflexes <span class="degrade-titre">en jouant</span>.</h1>
+      <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">
+        Hameçonnage, mots de passe, Wi-Fi public, données personnelles : CyberHoot propose des quiz courts,
+        expliqués et validés, à faire seul ou en direct avec toute une salle.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        {% if current_user.is_authenticated %}
+          <a class="bouton-principal" href="{{ url_for('account.profile') }}">Mon espace</a>
+        {% else %}
+          <a class="bouton-principal" href="{{ url_for('auth.register') }}">Créer un compte gratuit</a>
+          <a class="bouton-secondaire" href="{{ url_for('auth.login') }}">J'ai déjà un compte</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="carte relative overflow-hidden">
+      <p class="text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Question 3 sur 10</p>
+      <p class="mt-2 text-xl font-bold">Un SMS vous annonce un colis bloqué et demande 1,99 € de frais. Que faites-vous ?</p>
+      <ul class="mt-5 grid gap-3 sm:grid-cols-2" aria-label="Exemple de réponses">
+        <li class="rounded-xl bg-red-700 px-4 py-3 font-semibold text-white">▲ Je paie, c'est peu</li>
+        <li class="rounded-xl bg-sky-700 px-4 py-3 font-semibold text-white">◆ Je clique pour vérifier</li>
+        <li class="rounded-xl bg-amber-500 px-4 py-3 font-semibold text-nuit-950">● Je réponds STOP</li>
+        <li class="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white">■ Je supprime et je signale au 33700</li>
+      </ul>
+      <p class="mt-4 text-sm text-slate-600 dark:text-slate-300">Chaque réponse est suivie d'une explication.</p>
+    </div>
+  </section>
+
+  <section class="mt-10 grid gap-6 md:grid-cols-3" aria-labelledby="titre-modes">
+    <h2 id="titre-modes" class="sr-only">Ce que propose CyberHoot</h2>
+    <article class="carte">
+      <h3 class="text-lg font-bold">En solo</h3>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">Jouez à votre rythme, suivez votre progression par thème et débloquez des badges.</p>
+    </article>
+    <article class="carte">
+      <h3 class="text-lg font-bold">En direct</h3>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">Un animateur projette le quiz, chacun répond sur son téléphone avec un code PIN. Le plus rapide marque le plus de points.</p>
+    </article>
+    <article class="carte">
+      <h3 class="text-lg font-bold">Du contenu fiable</h3>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">Chaque quiz est relu par un administrateur et s'appuie sur des sources publiques reconnues.</p>
+    </article>
+  </section>
+{% endblock %}

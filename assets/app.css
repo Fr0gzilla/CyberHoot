@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Composants réutilisés par les gabarits. Les couleurs sont vérifiées au contraste AA
+   (texte normal ≥ 4,5:1) en thème clair comme en thème sombre. */
+@layer base {
+  html { @apply bg-[#f4faf5] text-slate-900 antialiased; }
+  html[data-theme="dark"] { @apply bg-nuit-950 text-slate-100; }
+  /* Focus toujours visible au clavier */
+  :focus-visible { @apply outline outline-[3px] outline-offset-2 outline-phosphore-600 dark:outline-phosphore-300; }
+  a { @apply text-phosphore-700 underline-offset-2 hover:underline dark:text-phosphore-300; }
+  h1, h2, h3 { @apply font-mono tracking-tight; }
+  h1 { @apply text-3xl font-extrabold sm:text-4xl; }
+  h2 { @apply text-xl font-bold; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+}
+
+@layer components {
+  .lien-evitement {
+    @apply absolute left-2 top-2 z-50 -translate-y-24 rounded-lg bg-phosphore-700 px-4 py-2 font-semibold
+      text-white no-underline focus:translate-y-0;
+  }
+  .carte {
+    @apply rounded-2xl border border-slate-200 bg-white p-6 shadow-sm
+      dark:border-nuit-700 dark:bg-nuit-900 dark:shadow-[0_0_30px_rgba(74,222,128,0.06)];
+  }
+  .bouton {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 font-semibold
+      no-underline transition hover:no-underline disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .bouton-principal {
+    @apply bouton bg-phosphore-700 text-white hover:bg-phosphore-800
+      dark:bg-phosphore-400 dark:text-nuit-950 dark:hover:bg-phosphore-300;
+  }
+  .bouton-secondaire {
+    @apply bouton border border-slate-300 bg-white text-slate-900 hover:bg-slate-100
+      dark:border-nuit-700 dark:bg-nuit-800 dark:text-slate-100 dark:hover:bg-nuit-700;
+  }
+  .bouton-danger {
+    @apply bouton bg-red-700 text-white hover:bg-red-600;
+  }
+  .lien-nav {
+    @apply rounded-lg px-3 py-2 font-medium text-slate-700 no-underline hover:bg-slate-100
+      hover:no-underline dark:text-slate-200 dark:hover:bg-nuit-800;
+  }
+  .champ-libelle { @apply mb-1 block font-semibold; }
+  .champ {
+    @apply block w-full rounded-xl border border-slate-400 bg-white px-4 py-2.5 text-slate-900
+      dark:border-slate-500 dark:bg-nuit-800 dark:text-slate-100;
+  }
+  .champ[aria-invalid="true"] { @apply border-red-700 dark:border-red-400; }
+  .champ-aide { @apply mt-1 text-sm text-slate-600 dark:text-slate-300; }
+  .champ-erreur { @apply mt-1 text-sm font-medium text-red-700 dark:text-red-300; }
+  .message { @apply flex items-start justify-between gap-4 rounded-xl border px-4 py-3; }
+  .message-info { @apply border-phosphore-300 bg-phosphore-50 text-phosphore-900 dark:border-phosphore-400 dark:bg-nuit-800 dark:text-phosphore-100; }
+  .message-success { @apply border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-400 dark:bg-nuit-800 dark:text-emerald-100; }
+  .message-error { @apply border-red-300 bg-red-50 text-red-900 dark:border-red-400 dark:bg-nuit-800 dark:text-red-100; }
+  .degrade-titre {
+    @apply bg-gradient-to-r from-phosphore-700 to-emerald-700 bg-clip-text text-transparent
+      dark:from-phosphore-300 dark:to-emerald-300;
+  }
+  /* Lueur discrète du thème sombre, clin d'œil à l'écran cathodique de l'ancienne version. */
+  .lueur { @apply dark:[text-shadow:0_0_18px_rgba(74,222,128,0.35)]; }
+  .etiquette {
+    @apply inline-block rounded-full border border-phosphore-700/30 bg-phosphore-100 px-3 py-1 font-mono
+      text-sm font-semibold text-phosphore-900 dark:border-phosphore-400/40 dark:bg-nuit-800
+      dark:text-phosphore-300;
+  }
+}

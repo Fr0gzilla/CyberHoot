@@ -1,0 +1,33 @@
+{# Rendu accessible d'un champ : libellé lié, aide et erreurs annoncées (aria-describedby). #}
+{% macro champ(field, aide=None, autocomplete=None) %}
+  {% set id_aide = field.id ~ '-aide' %}
+  {% set id_erreurs = field.id ~ '-erreurs' %}
+  {% set decrit = [] %}
+  {% if aide %}{% set _ = decrit.append(id_aide) %}{% endif %}
+  {% if field.errors %}{% set _ = decrit.append(id_erreurs) %}{% endif %}
+  <div class="mb-5">
+    {% if field.type == 'BooleanField' %}
+      <div class="flex items-start gap-3">
+        {{ field(class="mt-1 h-5 w-5 rounded border-slate-400", **({'aria-describedby': decrit|join(' ')} if decrit else {})) }}
+        {{ field.label(class="font-medium") }}
+      </div>
+    {% else %}
+      {{ field.label(class="champ-libelle") }}
+      {% set attributs = {'class': 'champ', 'aria-invalid': 'true' if field.errors else 'false'} %}
+      {% if decrit %}{% set _ = attributs.update({'aria-describedby': decrit|join(' ')}) %}{% endif %}
+      {% if autocomplete %}{% set _ = attributs.update({'autocomplete': autocomplete}) %}{% endif %}
+      {% if field.flags.required %}{% set _ = attributs.update({'required': True}) %}{% endif %}
+      {{ field(**attributs) }}
+    {% endif %}
+    {% if aide %}<p id="{{ id_aide }}" class="champ-aide">{{ aide }}</p>{% endif %}
+    {% if field.errors %}
+      <ul id="{{ id_erreurs }}" class="champ-erreur">
+        {% for erreur in field.errors %}<li>{{ erreur }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro aide_mot_de_passe() -%}
+  Au moins 12 caractères. Une phrase de passe facile à retenir est idéale, par exemple quatre mots sans rapport entre eux.
+{%- endmacro %}

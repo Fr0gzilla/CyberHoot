@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CyberHoot : des quiz pour apprendre les bons réflexes de cybersécurité, seul ou en direct.">
+  <title>{% block title %}CyberHoot{% endblock %} · CyberHoot</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {# Thème choisi avant l'affichage, pour éviter un éclair de la mauvaise couleur. #}
+  <script src="{{ url_for('static', filename='js/theme.js') }}" nonce="{{ csp_nonce() }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}" nonce="{{ csp_nonce() }}" defer></script>
+</head>
+<body class="flex min-h-screen flex-col">
+  <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+
+  <header class="border-b border-slate-200 bg-white/90 dark:border-nuit-700 dark:bg-nuit-900/90">
+    <nav class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3" aria-label="Navigation principale">
+      <a href="{{ url_for('main.index') }}" class="flex items-center gap-2 font-mono text-xl font-extrabold text-slate-900 no-underline hover:no-underline dark:text-white">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="" width="36" height="36">
+        CyberHoot
+      </a>
+      <ul class="flex flex-wrap items-center gap-1">
+        {% if current_user.is_authenticated %}
+          <li><a class="lien-nav" href="{{ url_for('account.profile') }}">Mon profil</a></li>
+          <li>
+            <form method="post" action="{{ url_for('auth.logout') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="lien-nav">Se déconnecter</button>
+            </form>
+          </li>
+        {% else %}
+          <li><a class="lien-nav" href="{{ url_for('auth.login') }}">Connexion</a></li>
+          <li><a class="bouton-principal" href="{{ url_for('auth.register') }}">Créer un compte</a></li>
+        {% endif %}
+        <li>
+          <button type="button" class="lien-nav" data-bascule-theme aria-pressed="false">
+            <span aria-hidden="true">◐</span> <span data-libelle-theme>Thème sombre</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main id="contenu" class="mx-auto w-full max-w-6xl flex-1 px-4 py-8" tabindex="-1">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-6 space-y-3" role="status" aria-live="polite">
+          {% for categorie, message in messages %}
+            <div class="message message-{{ categorie if categorie in ['info', 'success', 'error'] else 'info' }}">
+              <p>{{ message }}</p>
+              <button type="button" class="font-bold" data-fermer-message aria-label="Fermer ce message">×</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 py-6 text-sm text-slate-600 dark:border-nuit-700 dark:text-slate-300">
+    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4">
+      <p>CyberHoot — apprendre les bons réflexes numériques.</p>
+      <p><a href="{{ url_for('main.privacy') }}">Confidentialité</a></p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import champ, aide_mot_de_passe %}
+{% block title %}Mon profil{% endblock %}
+{% block content %}
+  <h1>Bonjour, {{ current_user.username }}</h1>
+  <p class="mt-2 text-slate-700 dark:text-slate-300">
+    Rôles : {% for role in current_user.roles|sort(attribute='name') %}<span class="etiquette mr-1">{{ role.label }}</span>{% endfor %}
+    · Membre depuis le {{ current_user.created_at.strftime('%d/%m/%Y') }}
+  </p>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-2">
+    <section class="carte" aria-labelledby="titre-pseudo">
+      <h2 id="titre-pseudo">Pseudo</h2>
+      <form method="post" action="{{ url_for('account.change_username') }}" novalidate class="mt-4">
+        {{ username_form.hidden_tag() }}
+        {{ champ(username_form.username, aide="Actuel : " ~ current_user.username, autocomplete="username") }}
+        <button type="submit" class="bouton-principal">Changer de pseudo</button>
+      </form>
+    </section>
+
+    <section class="carte" aria-labelledby="titre-mdp">
+      <h2 id="titre-mdp">Mot de passe</h2>
+      <form method="post" action="{{ url_for('account.change_password') }}" novalidate class="mt-4">
+        {{ password_form.hidden_tag() }}
+        {{ champ(password_form.current_password, autocomplete="current-password") }}
+        {{ champ(password_form.password, aide=aide_mot_de_passe(), autocomplete="new-password") }}
+        {{ champ(password_form.password_confirm, autocomplete="new-password") }}
+        <button type="submit" class="bouton-principal">Changer de mot de passe</button>
+      </form>
+    </section>
+
+    <section class="carte border-red-300 dark:border-red-400 lg:col-span-2" aria-labelledby="titre-suppr">
+      <h2 id="titre-suppr">Supprimer mon compte</h2>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">Votre compte et toutes vos données seront effacés immédiatement. Cette action est définitive.</p>
+      <form method="post" action="{{ url_for('account.delete_account') }}" novalidate class="mt-4 max-w-md"
+            data-confirmer="Supprimer définitivement votre compte ?">
+        {{ delete_form.hidden_tag() }}
+        {{ champ(delete_form.password, autocomplete="current-password") }}
+        {{ champ(delete_form.confirm) }}
+        <button type="submit" class="bouton-danger">Supprimer mon compte</button>
+      </form>
+    </section>
+  </div>
+{% endblock %}

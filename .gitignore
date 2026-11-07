@@ -1,0 +1,27 @@
+# Secrets et configuration locale : jamais dans le dépôt
+secrets/
+.env
+.env.*
+!.env.example
+
+# Fichiers envoyés par les utilisateurs
+uploads/
+
+# Généré
+app/static/css/app.css
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+
+# Outils et système
+.DS_Store
+.idea/
+.vscode/

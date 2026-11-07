@@ -1,0 +1,17 @@
+{% extends "auth/_carte.html" %}
+{% from "macros/forms.html" import champ %}
+{% block title %}Connexion{% endblock %}
+{% block titre_carte %}Connexion{% endblock %}
+{% block formulaire %}
+  <form method="post" novalidate class="mt-6">
+    {{ form.hidden_tag() }}
+    {{ champ(form.email, autocomplete="email") }}
+    {{ champ(form.password, autocomplete="current-password") }}
+    {{ champ(form.remember) }}
+    <button type="submit" class="bouton-principal w-full">Se connecter</button>
+  </form>
+  <p class="mt-4 text-sm"><a href="{{ url_for('auth.forgot_password') }}">Mot de passe oublié ?</a></p>
+{% endblock %}
+{% block apres %}
+  <p class="mt-6 text-center">Pas encore de compte ? <a href="{{ url_for('auth.register') }}">Créer un compte</a></p>
+{% endblock %}

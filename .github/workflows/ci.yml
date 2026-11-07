@@ -1,0 +1,102 @@
+name: Intégration continue
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualite:
+    name: Lint, types, sécurité du code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dépendances (versions figées et vérifiées par empreinte)
+        run: pip install --require-hashes -r requirements.txt -r requirements-dev.txt
+      - name: Ruff (lint)
+        run: ruff check .
+      - name: Ruff (format)
+        run: ruff format --check .
+      - name: Mypy (strict)
+        run: mypy
+      - name: Bandit
+        run: bandit -q -c pyproject.toml -r app
+      - name: pip-audit (vulnérabilités connues des dépendances)
+        run: pip-audit -r requirements.txt --strict --progress-spinner off
+
+  tests:
+    name: Tests sur MySQL 8.4
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: cyberhoot_test
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test-ci-uniquement
+          MYSQL_ROOT_PASSWORD: root-ci-uniquement
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+    env:
+      TEST_DATABASE_URL: mysql+pymysql://test:test-ci-uniquement@127.0.0.1:3306/cyberhoot_test?charset=utf8mb4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install --require-hashes -r requirements.txt -r requirements-dev.txt
+      - name: Tests et couverture
+        run: pytest --cov --cov-report=term-missing --cov-report=xml
+      - name: Le schéma documenté correspond aux migrations
+        env:
+          DATABASE_URL: mysql+pymysql://x:x@localhost/cyberhoot
+        run: |
+          alembic upgrade head --sql > /tmp/schema.sql
+          diff -u docs/modele/schema.sql /tmp/schema.sql
+
+  image:
+    name: Image Docker et analyse Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construction de l'image de production
+        run: docker build --target production -t cyberhoot:ci .
+      - name: Analyse de l'image (vulnérabilités critiques ou élevées corrigeables)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cyberhoot:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Démarrage de la pile complète
+        run: |
+          make secrets
+          docker compose up -d --wait
+          curl -fsS http://localhost:8080/health
+          docker compose exec -T app id -u | grep -qx 10001
+      - name: Journaux en cas d'échec
+        if: failure()
+        run: docker compose logs --no-color
+
+  secrets:
+    name: Recherche de secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

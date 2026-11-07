@@ -1,0 +1,11 @@
+{% extends "auth/_carte.html" %}
+{% from "macros/forms.html" import champ %}
+{% block title %}Activer mon compte{% endblock %}
+{% block titre_carte %}Recevoir un nouveau lien d'activation{% endblock %}
+{% block formulaire %}
+  <form method="post" novalidate class="mt-6">
+    {{ form.hidden_tag() }}
+    {{ champ(form.email, autocomplete="email") }}
+    <button type="submit" class="bouton-principal w-full">Envoyer un nouveau lien</button>
+  </form>
+{% endblock %}

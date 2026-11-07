@@ -1,0 +1,12 @@
+{# Mise en page commune des formulaires de compte. #}
+{% extends "base.html" %}
+{% block content %}
+  <div class="mx-auto max-w-md">
+    <div class="carte">
+      <h1 class="mb-2 text-2xl sm:text-3xl">{% block titre_carte %}{% endblock %}</h1>
+      {% block intro %}{% endblock %}
+      {% block formulaire %}{% endblock %}
+    </div>
+    {% block apres %}{% endblock %}
+  </div>
+{% endblock %}

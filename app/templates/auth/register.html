@@ -1,0 +1,23 @@
+{% extends "auth/_carte.html" %}
+{% from "macros/forms.html" import champ, aide_mot_de_passe %}
+{% block title %}Créer un compte{% endblock %}
+{% block titre_carte %}Créer un compte{% endblock %}
+{% block intro %}
+  <p class="text-slate-600 dark:text-slate-300">Gratuit. Votre pseudo apparaîtra dans les classements ; votre adresse e-mail reste privée.</p>
+{% endblock %}
+{% block formulaire %}
+  <form method="post" novalidate class="mt-6">
+    {{ form.hidden_tag() }}
+    {{ champ(form.username, aide="3 à 32 caractères : lettres sans accent, chiffres, - ou _.", autocomplete="username") }}
+    {{ champ(form.email, autocomplete="email") }}
+    {{ champ(form.password, aide=aide_mot_de_passe(), autocomplete="new-password") }}
+    {{ champ(form.password_confirm, autocomplete="new-password") }}
+    <p class="mb-5 text-sm text-slate-600 dark:text-slate-300">
+      En créant un compte, vous acceptez la <a href="{{ url_for('main.privacy') }}">politique de confidentialité</a>.
+    </p>
+    <button type="submit" class="bouton-principal w-full">Créer mon compte</button>
+  </form>
+{% endblock %}
+{% block apres %}
+  <p class="mt-6 text-center">Déjà inscrit ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
+{% endblock %}

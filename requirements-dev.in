@@ -1,0 +1,8 @@
+# Outils de développement et de vérification
+-c requirements.txt
+pytest==9.2.*
+pytest-cov==7.1.*
+ruff==0.17.*
+mypy==2.4.*
+bandit==1.9.*
+pip-audit==2.10.*
