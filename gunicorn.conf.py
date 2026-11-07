@@ -4,7 +4,7 @@ import os
 
 bind = "0.0.0.0:8000"
 workers = int(os.environ.get("GUNICORN_WORKERS", "3"))
-threads = 2
+threads = 4
 timeout = 30
 graceful_timeout = 20
 accesslog = "-"

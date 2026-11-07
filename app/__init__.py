@@ -47,6 +47,7 @@ def create_app(config: Config | None = None) -> Flask:
     from app.admin.routes import bp as admin_bp
     from app.auth.routes import bp as auth_bp
     from app.creator.routes import bp as creator_bp
+    from app.live.routes import bp as live_bp
     from app.main.routes import bp as main_bp
     from app.quiz.routes import bp as quiz_bp
 
@@ -56,6 +57,7 @@ def create_app(config: Config | None = None) -> Flask:
     app.register_blueprint(quiz_bp)
     app.register_blueprint(creator_bp, url_prefix="/createur")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(live_bp, url_prefix="/direct")
 
     security.installer(app)
     errors.installer(app)

@@ -1,0 +1,129 @@
+{% extends "live/_base.html" %}
+{% from "macros/quiz.html" import FORMES, COULEURS %}
+{% block title %}Animer · {{ partie.quiz.title }}{% endblock %}
+{% block content %}
+  <div data-direct="animateur" data-etat="{{ url_for('live.state', game_id=partie.id) }}"
+       data-version="{{ partie.version }}" data-joueurs="{{ etat.joueurs }}" data-chrono-total="{{ partie.time_limit }}">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h1 class="text-2xl sm:text-3xl">{{ partie.quiz.title }}</h1>
+      <div class="flex flex-wrap gap-2">
+        {% macro action(nom, libelle, classe='bouton-secondaire') %}
+          <form method="post" action="{{ url_for('live.host_action', game_id=partie.id, action=nom) }}"
+                {% if nom == 'terminer' %}data-confirmer="Terminer la partie maintenant ?"{% endif %}>
+            {{ form.hidden_tag() }}
+            <button type="submit" class="{{ classe }}">{{ libelle }}</button>
+          </form>
+        {% endmacro %}
+        {% if partie.status.value == 'question' %}{{ action('pause', '⏸ Pause') }}{{ action('suivant', 'Arrêter le chrono', 'bouton-principal') }}{% endif %}
+        {% if partie.status.value == 'paused' %}{{ action('reprendre', '▶ Reprendre', 'bouton-principal') }}{{ action('suivant', 'Arrêter le chrono') }}{% endif %}
+        {% if partie.status.value == 'reveal' %}{{ action('suivant', 'Question suivante →' if partie.current_index + 1 < partie.total else 'Voir le podium →', 'bouton-principal') }}{% endif %}
+        {% if partie.active %}{{ action('terminer', 'Terminer', 'bouton-danger') }}{% endif %}
+      </div>
+    </div>
+
+    {% if partie.status.value == 'lobby' %}
+      <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_auto]">
+        <div class="carte text-center">
+          <p class="text-lg">Rendez-vous sur <strong class="font-mono">{{ lien_rejoindre }}</strong> avec le code :</p>
+          <p class="mt-4 font-mono text-6xl font-extrabold tracking-[0.2em] degrade-titre sm:text-8xl" aria-label="Code PIN : {{ partie.pin|join(' ') }}">{{ partie.pin }}</p>
+          <p class="mt-6 text-lg"><span data-joueurs-total class="font-mono font-bold">{{ etat.joueurs }}</span> joueur(s) dans la salle</p>
+          <div class="mt-6">{{ action('demarrer', 'Lancer la partie', 'bouton-principal text-lg px-8 py-3') if joueurs else '' }}</div>
+          {% if not joueurs %}<p class="mt-4 text-slate-600 dark:text-slate-300">En attente du premier joueur…</p>{% endif %}
+        </div>
+        {% if qr %}<div class="carte flex items-center justify-center bg-white p-4"><div class="w-56">{{ qr }}</div></div>{% endif %}
+      </div>
+      {% if joueurs %}
+        <ul class="mt-6 flex flex-wrap gap-2" aria-label="Joueurs dans la salle">
+          {% for joueur in joueurs %}
+            <li class="flex items-center gap-1 rounded-full border border-slate-300 bg-white pl-3 dark:border-nuit-700 dark:bg-nuit-900">
+              <span class="font-semibold">{{ joueur.nickname }}</span>
+              <form method="post" action="{{ url_for('live.host_action', game_id=partie.id, action='exclure') }}" data-confirmer="Exclure {{ joueur.nickname }} ?">
+                {{ form.hidden_tag() }}
+                <input type="hidden" name="joueur" value="{{ joueur.id }}">
+                <button type="submit" class="rounded-full px-3 py-1 text-red-700 dark:text-red-300" aria-label="Exclure {{ joueur.nickname }}">×</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+    {% elif partie.status.value in ['question', 'paused', 'reveal'] and question %}
+      <div class="mt-6 flex items-center justify-between font-mono">
+        <span>Question {{ partie.current_index + 1 }} / {{ partie.total }}</span>
+        {% if partie.status.value != 'reveal' %}
+          <span class="text-4xl font-extrabold"><span data-chrono>{{ ((etat.reste_ms or 0) / 1000)|round(0, 'ceil')|int }}</span> s{% if partie.status.value == 'paused' %} · pause{% endif %}</span>
+          <span><span data-reponses>{{ etat.reponses }}</span> / <span data-joueurs-total>{{ etat.joueurs }}</span> réponses</span>
+        {% else %}
+          <span>{{ etat.reponses }} / {{ etat.joueurs }} réponses</span>
+        {% endif %}
+      </div>
+      {% if partie.status.value != 'reveal' %}
+        <div class="mt-2 h-3 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-nuit-800" aria-hidden="true">
+          <div class="h-3 bg-phosphore-600 dark:bg-phosphore-400 barre-100" data-chrono-barre></div>
+        </div>
+      {% endif %}
+      <div class="carte mt-4">
+        <h2 class="text-2xl sm:text-4xl">{{ question.text }}</h2>
+        {% include "quiz/_image.html" %}
+        {% set total_reponses = etat.reponses or 1 %}
+        <ul class="mt-6 grid gap-4 md:grid-cols-2">
+          {% for option in question.options %}
+            {% set revele = partie.status.value == 'reveal' %}
+            <li class="rounded-2xl px-5 py-4 text-xl font-semibold {{ COULEURS[loop.index0 % 6] }} {{ 'opacity-40' if revele and not option.is_correct }}">
+              <span aria-hidden="true">{{ FORMES[loop.index0 % 6] }}</span> {{ option.text }}
+              {% if revele %}
+                {% set n = histogramme.get(option.id, 0) %}
+                <span class="float-right font-mono">{{ '✓ ' if option.is_correct }}{{ n }}</span>
+                <span class="mt-2 block h-2 overflow-hidden rounded-full bg-black/20" aria-hidden="true">
+                  <span class="block h-2 bg-white barre-{{ ((10 * n / total_reponses)|round|int) * 10 }}"></span>
+                </span>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+        {% if partie.status.value == 'reveal' %}
+          <p class="mt-6 whitespace-pre-line rounded-xl bg-slate-100 p-4 text-lg dark:bg-nuit-800">{{ question.explanation }}</p>
+        {% endif %}
+      </div>
+      {% if partie.status.value == 'reveal' %}
+        <section class="carte mt-6" aria-labelledby="titre-classement">
+          <h2 id="titre-classement">Classement</h2>
+          <ol class="mt-3 space-y-2">
+            {% for joueur in classement %}
+              <li class="flex justify-between font-mono text-lg"><span>{{ loop.index }}. {{ joueur.nickname }}</span><span>{{ joueur.score }}</span></li>
+            {% endfor %}
+          </ol>
+        </section>
+      {% endif %}
+
+    {% elif partie.status.value == 'finished' %}
+      <section class="mt-8 text-center" aria-labelledby="titre-podium">
+        <h2 id="titre-podium" class="text-3xl">Podium</h2>
+        <ol class="mx-auto mt-8 grid max-w-3xl grid-cols-3 items-end gap-4">
+          {% for place, hauteur in [(1, 'h-28'), (0, 'h-40'), (2, 'h-20')] %}
+            {% set joueur = classement[place] if classement|length > place else none %}
+            <li class="flex flex-col items-center">
+              {% if joueur %}
+                <span class="font-mono text-lg font-bold">{{ joueur.nickname }}</span>
+                <span class="font-mono text-sm">{{ joueur.score }} pts</span>
+              {% endif %}
+              <span class="mt-2 flex w-full {{ hauteur }} items-start justify-center rounded-t-xl bg-phosphore-700 pt-2 font-mono text-3xl font-extrabold text-white dark:bg-phosphore-400 dark:text-nuit-950">{{ place + 1 }}</span>
+            </li>
+          {% endfor %}
+        </ol>
+      </section>
+      <section class="carte mx-auto mt-8 max-w-3xl" aria-labelledby="titre-final">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="titre-final">Classement complet</h2>
+          <a class="bouton-secondaire" href="{{ url_for('live.export', game_id=partie.id) }}">Télécharger (CSV)</a>
+        </div>
+        <ol class="mt-4 divide-y divide-slate-200 dark:divide-nuit-700">
+          {% for joueur in classement %}
+            <li class="flex justify-between py-2 font-mono"><span>{{ loop.index }}. {{ joueur.nickname }}</span><span>{{ joueur.score }}</span></li>
+          {% endfor %}
+        </ol>
+        <p class="mt-4 text-sm text-slate-600 dark:text-slate-300">Ce classement est effacé 24 h après la fin de la partie.</p>
+      </section>
+    {% endif %}
+  </div>
+{% endblock %}

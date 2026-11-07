@@ -41,6 +41,8 @@ test-mysql: ## Tests sur un MySQL jetable (comme l'intégration continue)
 
 up: secrets ## Démarre la pile (http://localhost:8080)
 	$(COMPOSE) up -d --build --wait
+	@# Nginx ne relit pas seul sa configuration (fichiers montés) : on la recharge.
+	$(COMPOSE) exec proxy nginx -c /etc/nginx/cyberhoot/nginx.conf -s reload
 
 down: ## Arrête la pile (les données restent)
 	$(COMPOSE) down

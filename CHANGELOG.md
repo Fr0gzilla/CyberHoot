@@ -1,5 +1,23 @@
 # Journal des versions
 
+## v2.0 — En direct
+
+- Parties en direct : l'animateur lance un quiz publié et projette un code PIN à 6 chiffres et
+  un QR code ; les joueurs rejoignent sur leur téléphone, avec ou sans compte.
+- Salle d'attente, chrono par question (10 à 60 s), correction automatique à la fin du chrono
+  ou quand tout le monde a répondu, histogramme des réponses, classement, podium.
+- Points : 500 par bonne réponse, plus jusqu'à 500 selon la rapidité, calculés avec l'heure du
+  serveur ; pause et reprise sans pénalité.
+- Animateur : pause, question suivante, exclusion d'un joueur, fin de partie, export CSV du
+  classement (protégé contre l'injection de formules).
+- Robustesse : changements d'écran par mise à jour conditionnelle (double clic sans effet),
+  reconnexion d'un joueur, pseudos filtrés, parties abandonnées terminées après 3 h et
+  effacées 24 h après la fin, résultats des joueurs connectés dans leur historique.
+- Écrans mis à jour par interrogation de l'état chaque seconde (pas de WebSocket : passe les
+  pare-feu d'établissement) ; fonctionne aussi sans JavaScript (rechargement automatique).
+- Test de charge : 200 joueurs derrière une même adresse IP ; il a révélé et fait corriger un
+  interblocage MySQL et des limites de débit inadaptées à une salle de classe.
+
 ## v1.1 — Quiz solides
 
 - Catalogue : recherche, filtres par catégorie et niveau, pagination, note moyenne.

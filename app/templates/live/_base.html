@@ -1,0 +1,7 @@
+{# Écrans du direct : script d'interrogation, et rechargement simple sans JavaScript. #}
+{% extends "base.html" %}
+{% block head_extra %}
+  {# Sans JavaScript, la page se recharge seule, sauf pendant qu'un joueur choisit sa réponse. #}
+  {% if rafraichir %}<noscript><meta http-equiv="refresh" content="3"></noscript>{% endif %}
+  <script src="{{ url_for('static', filename='js/live.js') }}" nonce="{{ csp_nonce() }}" defer></script>
+{% endblock %}

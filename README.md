@@ -14,7 +14,7 @@ Refonte complète de Cyber-hoot, projet de groupe réalisé en BTS SIO (dépôt 
 |---------|---------|------|
 | **v1.0 — Socle sécurisé** | Comptes (inscription avec confirmation par e-mail, connexion, verrouillage, mot de passe oublié, profil, suppression), protections CSRF, CSP stricte, limitation de débit, Docker durci, intégration continue | ✅ |
 | **v1.1 — Quiz solides** | Catalogue (recherche, filtres, notes), parties en solo corrigées côté serveur, éditeur de quiz, validation par un administrateur, images analysées, avis, statistiques | ✅ |
-| v2.0 — En direct | Parties en direct avec code PIN, chrono, classement en temps réel | à venir |
+| **v2.0 — En direct** | Parties en direct : code PIN et QR code, salle d'attente, chrono, points selon la rapidité, histogramme, classement et podium, pause, exclusion, export CSV ; testé avec 200 joueurs ([rapport](docs/charge-v2.0.md)) | ✅ |
 | v2.1 — Contenu cyber | Questions « repérer le phishing », catégories, badges et progression | à venir |
 | v2.2 — Administrer | Double authentification, journal d'audit, données personnelles | à venir |
 | v3.0 — Finition | Accessibilité complète, HTTPS, dossier technique | à venir |
@@ -62,6 +62,7 @@ Navigateur ──► Nginx (seul port publié, limite de débit)
 - `migrations/` : migrations Alembic, **seule source du schéma** de la base.
 - `docs/modele/` : règles de gestion, dictionnaire, MCD, MLD, diagrammes, schéma SQL généré.
 - `tests/` : tests du comportement, exécutés sur MySQL en intégration continue.
+- `outils/charge_direct.py` : test de charge d'une partie en direct.
 
 ## Sécurité
 
@@ -77,6 +78,9 @@ Navigateur ──► Nginx (seul port publié, limite de débit)
   injoignables depuis l'extérieur.
 - Quiz : le navigateur ne reçoit jamais les bonnes réponses avant d'avoir répondu et n'envoie
   jamais de score ; le serveur corrige chaque réponse, une seule fois, dans l'ordre.
+- Direct : chrono et points calculés avec l'heure du serveur ; une réponse par joueur et par
+  question ; changements d'écran par mise à jour conditionnelle (aucun double déclenchement) ;
+  seuls les codes PIN faux sont fortement limités ; données des joueurs effacées sous 24 h.
 - Images : format réel vérifié, ré-encodage (métadonnées retirées), nom aléatoire, analyse
   antivirus avant toute diffusion.
 - Contrôle d'accès vérifié côté serveur sur chaque page : un brouillon, une partie ou une image

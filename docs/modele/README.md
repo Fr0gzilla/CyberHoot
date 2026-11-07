@@ -1,4 +1,4 @@
-# Modèle de données — v1.1 (comptes et quiz)
+# Modèle de données — v2.0 (comptes, quiz, parties en direct)
 
 La base n'a qu'**une source de vérité** : les modèles SQLAlchemy (`app/models/`) et les migrations
 Alembic (`migrations/versions/`). Le fichier [`schema.sql`](schema.sql) est **généré** depuis les
@@ -28,6 +28,12 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | RG17 | Une partie appartient à un joueur et à un quiz ; l'ordre des questions est figé au démarrage. Le joueur répond à la question en cours seulement, une seule fois ; le serveur corrige (une réponse est juste si l'ensemble des choix est exactement celui des bonnes réponses) et calcule le score. |
 | RG18 | Un joueur a au plus une partie en cours par quiz (reprise automatique). Modifier les questions d'un quiz arrête ses parties en cours. |
 | RG19 | Un joueur donne au plus un avis par quiz (note de 1 à 5, commentaire facultatif), après au moins une partie terminée ; il peut le modifier. |
+| RG20 | Une partie en direct porte sur un quiz publié et est lancée par un créateur ou un administrateur (l'animateur). Son code PIN à 6 chiffres est unique parmi les parties en cours et libéré à la fin. |
+| RG21 | Un joueur rejoint avec le PIN et un pseudo (1 à 20 caractères, mots grossiers refusés), unique dans la partie sans tenir compte de la casse, des accents ni des espaces ; un compte n'est pas nécessaire. Une partie compte au plus 200 joueurs. |
+| RG22 | Une question en direct a un chrono de 10 à 60 s, mesuré par l'heure du serveur. Un joueur répond une seule fois, avant la fin du chrono, à la question en cours. La correction s'affiche à la fin du chrono, quand tous les joueurs ont répondu, ou sur décision de l'animateur. |
+| RG23 | Une bonne réponse rapporte 500 points, plus jusqu'à 500 selon la rapidité (proportionnellement au temps restant) ; une mauvaise réponse ou une absence de réponse, 0. Une pause de l'animateur ne pénalise pas les joueurs. |
+| RG24 | L'animateur peut mettre en pause, passer à la suite, exclure un joueur (retiré du classement), terminer. Une partie sans activité pendant 3 h est terminée automatiquement. |
+| RG25 | À la fin, les joueurs connectés retrouvent la partie dans leur historique ; la partie, ses joueurs et leurs réponses sont effacés 24 h après la fin. |
 
 ## Dictionnaire des données
 
@@ -76,6 +82,19 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | play_answer | id, session_id, position | | (session_id, position) unique | Réponse à une question |
 | play_answer | question_id, selected_ids, is_correct, answered_at | entier, JSON, booléen | | Choix (JSON, jamais de repr Python) et correction |
 | review | id, user_id, quiz_id, rating, comment, dates | | (user_id, quiz_id) unique, rating 1 à 5 | Avis |
+| live_game | id, pin | entier, texte (6) | pin unique, NULL une fois terminée | Partie en direct |
+| live_game | host_id, quiz_id | entiers | host SET NULL, quiz cascade | Animateur, quiz |
+| live_game | status | énumération | `lobby`, `question`, `paused`, `reveal`, `finished` | Écran en cours |
+| live_game | question_ids, current_index | JSON, entier | | Ordre figé, question en cours (-1 en salle d'attente) |
+| live_game | time_limit, max_players | entiers | 10 à 60 s ; 2 à 200 | Réglages |
+| live_game | question_started_at, question_deadline, paused_remaining_ms | dates UTC, entier | | Chrono (heure du serveur) |
+| live_game | version | entier | | Incrémentée à chaque changement d'écran (mise à jour conditionnelle) |
+| live_game | created_at, last_activity_at, ended_at | dates UTC | | Purge |
+| live_player | id, game_id, user_id, nickname, nickname_key | | (game_id, nickname_key) unique ; user SET NULL | Joueur |
+| live_player | token | texte (43) | unique | Secret gardé dans la session du joueur (reconnexion) |
+| live_player | score, kicked, joined_at | | | Points cumulés, exclusion |
+| live_answer | id, game_id, player_id, position, question_id | | (player_id, position) unique | Réponse en direct |
+| live_answer | selected_ids, is_correct, points, elapsed_ms, answered_at | JSON, booléen, entiers | | Choix, correction, points, temps de réponse |
 
 ## Modèle conceptuel (MCD)
 
@@ -94,6 +113,11 @@ erDiagram
     PARTIE ||--o{ REPONSE_DONNEE : "comprend (0,n) / appartient à (1,1)"
     UTILISATEUR ||--o{ AVIS : "donne (0,n) / donné par (1,1)"
     QUIZ ||--o{ AVIS : "reçoit (0,n) / porte sur (1,1)"
+    QUIZ ||--o{ PARTIE_DIRECT : "animé dans (0,n) / porte sur (1,1)"
+    UTILISATEUR |o--o{ PARTIE_DIRECT : "anime (0,n) / animée par (0,1)"
+    PARTIE_DIRECT ||--o{ JOUEUR_DIRECT : "accueille (0,200) / participe à (1,1)"
+    UTILISATEUR |o--o{ JOUEUR_DIRECT : "joue sous (0,n) / compte (0,1)"
+    JOUEUR_DIRECT ||--o{ REPONSE_DIRECT : "donne (0,n) / donnée par (1,1)"
     UTILISATEUR {
         string pseudo
         string email
@@ -132,6 +156,12 @@ erDiagram
   started_at, finished_at)
 - **play_answer** (<u>id</u>, #session_id, position, #question_id, selected_ids, is_correct, answered_at)
 - **review** (<u>id</u>, #user_id, #quiz_id, rating, comment, created_at, updated_at)
+- **live_game** (<u>id</u>, pin, #host_id, #quiz_id, status, question_ids, current_index, time_limit,
+  max_players, question_started_at, question_deadline, paused_remaining_ms, version, created_at,
+  last_activity_at, ended_at)
+- **live_player** (<u>id</u>, #game_id, #user_id, nickname, nickname_key, token, score, kicked, joined_at)
+- **live_answer** (<u>id</u>, #game_id, #player_id, position, #question_id, selected_ids, is_correct,
+  points, elapsed_ms, answered_at)
 
 ## Diagramme de classes
 
@@ -203,4 +233,21 @@ sequenceDiagram
     A->>A: question attendue ? choix appartenant à la question ? un seul si question simple ?
     A->>B: enregistre la réponse (unique par position), corrige, avance, score
     A-->>J: redirection vers la correction de cette question (explication)
+```
+
+## États d'une partie en direct
+
+```mermaid
+stateDiagram-v2
+    [*] --> lobby : l'animateur lance (PIN créé)
+    lobby --> question : « Lancer la partie » (au moins un joueur)
+    question --> paused : pause
+    paused --> question : reprise (chrono décalé)
+    question --> reveal : chrono écoulé, tous ont répondu, ou l'animateur
+    paused --> reveal : l'animateur
+    reveal --> question : question suivante
+    reveal --> finished : dernière question
+    lobby --> finished : terminer / 3 h sans activité
+    question --> finished : terminer
+    finished --> [*] : effacée 24 h plus tard
 ```

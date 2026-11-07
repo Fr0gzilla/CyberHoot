@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Rejoindre une partie{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-md">
+    <form method="post" action="{{ url_for('live.join') }}" class="carte" novalidate>
+      {{ form.hidden_tag() }}
+      <h1 class="text-center">Rejoindre une partie</h1>
+      <p class="mt-2 text-center text-slate-700 dark:text-slate-300">Entrez le code affiché par l'animateur.</p>
+      {% if erreur %}<p class="message message-error mt-4" role="alert">{{ erreur }}</p>{% endif %}
+      <div class="mt-6">
+        <label for="pin" class="champ-libelle">Code PIN</label>
+        <input id="pin" name="pin" class="champ text-center font-mono text-3xl tracking-[0.4em]" value="{{ pin }}"
+               inputmode="numeric" autocomplete="off" maxlength="7" pattern="[0-9 ]*" required>
+      </div>
+      <div class="mt-4">
+        <label for="pseudo" class="champ-libelle">Pseudo</label>
+        <input id="pseudo" name="pseudo" class="champ" value="{{ pseudo }}" maxlength="20" autocomplete="nickname" required aria-describedby="pseudo-aide">
+        <p id="pseudo-aide" class="champ-aide">Visible par toute la salle. Pas besoin de compte.</p>
+      </div>
+      <button type="submit" class="bouton-principal mt-6 w-full text-lg">C'est parti !</button>
+    </form>
+  </div>
+{% endblock %}

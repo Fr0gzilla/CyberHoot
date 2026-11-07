@@ -11,6 +11,7 @@
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <a class="bouton-principal" href="{{ url_for('quiz.catalog_page') }}">Voir les quiz</a>
+        <a class="bouton-secondaire" href="{{ url_for('live.join') }}">Rejoindre une partie</a>
         {% if current_user.is_authenticated %}
           <a class="bouton-secondaire" href="{{ url_for('account.profile') }}">Mon espace</a>
         {% else %}

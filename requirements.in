@@ -14,3 +14,4 @@ PyMySQL==1.2.*
 cryptography==50.*
 gunicorn==26.*
 Pillow==13.0.*
+segno==1.6.*

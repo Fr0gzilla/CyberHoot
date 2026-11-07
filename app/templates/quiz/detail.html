@@ -26,6 +26,19 @@
       {% else %}
         <p class="mt-2"><a href="{{ url_for('auth.login', next=request.path) }}">Connectez-vous</a> ou <a href="{{ url_for('auth.register') }}">créez un compte</a> pour jouer et suivre vos progrès.</p>
       {% endif %}
+      {% if jouable and current_user.is_authenticated and (current_user.has_role('creator') or current_user.has_role('admin')) %}
+        <hr class="my-5 border-slate-200 dark:border-nuit-700">
+        <h2>En direct</h2>
+        <p class="mt-2 text-slate-700 dark:text-slate-300">Projetez le quiz : chacun répond sur son téléphone avec un code PIN.</p>
+        <form method="post" action="{{ url_for('live.launch', quiz_id=quiz.id) }}" class="mt-4">
+          {{ form.hidden_tag() }}
+          <label for="chrono" class="champ-libelle">Temps par question</label>
+          <select id="chrono" name="chrono" class="champ">
+            {% for s in [10, 20, 30, 45, 60] %}<option value="{{ s }}" {{ 'selected' if s == 20 }}>{{ s }} secondes</option>{% endfor %}
+          </select>
+          <button type="submit" class="bouton-secondaire mt-3 w-full">Lancer en direct</button>
+        </form>
+      {% endif %}
     </aside>
   </div>
 

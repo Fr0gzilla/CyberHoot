@@ -37,6 +37,30 @@ def alembic_config(url: str) -> AlembicConfig:
     return config
 
 
+@pytest.fixture(scope="session", autouse=True)
+def horloge_sans_recul() -> Iterator[None]:
+    """Horodatage des jetons signés (session, CSRF) qui ne recule jamais.
+
+    L'horloge des machines virtuelles Docker sur Mac recule parfois de quelques
+    centaines de millisecondes ; un jeton paraît alors « venir du futur » et itsdangerous
+    le refuse, ce qui fait échouer un test au hasard. Ce n'est pas un défaut de
+    l'application (un serveur Linux à l'heure n'a pas ce problème), seulement des tests.
+    """
+    from itsdangerous import timed
+
+    origine = timed.TimestampSigner.get_timestamp
+    dernier = 0
+
+    def get_timestamp(self: timed.TimestampSigner) -> int:
+        nonlocal dernier
+        dernier = max(dernier, origine(self))
+        return dernier
+
+    timed.TimestampSigner.get_timestamp = get_timestamp  # type: ignore[method-assign]
+    yield
+    timed.TimestampSigner.get_timestamp = origine  # type: ignore[method-assign]
+
+
 @pytest.fixture(scope="session")
 def database_url(tmp_path_factory: pytest.TempPathFactory) -> Iterator[str]:
     url = os.environ.get("TEST_DATABASE_URL")

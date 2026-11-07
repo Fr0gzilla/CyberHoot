@@ -220,3 +220,73 @@ INSERT INTO category (id, slug, name, description, position) VALUES (8, 'bonnes-
 
 UPDATE alembic_version SET version_num='0002' WHERE alembic_version.version_num = '0001';
 
+-- Running upgrade 0002 -> 0003
+
+CREATE TABLE live_game (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    pin VARCHAR(6), 
+    host_id INTEGER, 
+    quiz_id INTEGER NOT NULL, 
+    status ENUM('lobby','question','paused','reveal','finished') NOT NULL, 
+    question_ids JSON NOT NULL, 
+    current_index INTEGER NOT NULL, 
+    time_limit INTEGER NOT NULL, 
+    max_players INTEGER NOT NULL, 
+    question_started_at DATETIME, 
+    question_deadline DATETIME, 
+    paused_remaining_ms INTEGER, 
+    version INTEGER NOT NULL, 
+    created_at DATETIME NOT NULL, 
+    last_activity_at DATETIME NOT NULL, 
+    ended_at DATETIME, 
+    CONSTRAINT pk_live_game PRIMARY KEY (id), 
+    CONSTRAINT fk_live_game_host_id_user FOREIGN KEY(host_id) REFERENCES user (id) ON DELETE SET NULL, 
+    CONSTRAINT fk_live_game_quiz_id_quiz FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE, 
+    CONSTRAINT uq_live_game_pin UNIQUE (pin)
+);
+
+CREATE INDEX ix_live_game_host_id ON live_game (host_id);
+
+CREATE INDEX ix_live_game_quiz_id ON live_game (quiz_id);
+
+CREATE TABLE live_player (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    game_id INTEGER NOT NULL, 
+    user_id INTEGER, 
+    nickname VARCHAR(20) NOT NULL, 
+    nickname_key VARCHAR(20) NOT NULL, 
+    token VARCHAR(43) NOT NULL, 
+    score INTEGER NOT NULL, 
+    kicked BOOL NOT NULL, 
+    joined_at DATETIME NOT NULL, 
+    CONSTRAINT pk_live_player PRIMARY KEY (id), 
+    CONSTRAINT fk_live_player_game_id_live_game FOREIGN KEY(game_id) REFERENCES live_game (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_live_player_user_id_user FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE SET NULL, 
+    CONSTRAINT pseudo_unique UNIQUE (game_id, nickname_key), 
+    CONSTRAINT uq_live_player_token UNIQUE (token)
+);
+
+CREATE INDEX ix_live_player_game_id ON live_player (game_id);
+
+CREATE TABLE live_answer (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    game_id INTEGER NOT NULL, 
+    player_id INTEGER NOT NULL, 
+    position INTEGER NOT NULL, 
+    question_id INTEGER, 
+    selected_ids JSON NOT NULL, 
+    is_correct BOOL NOT NULL, 
+    points INTEGER NOT NULL, 
+    elapsed_ms INTEGER NOT NULL, 
+    answered_at DATETIME NOT NULL, 
+    CONSTRAINT pk_live_answer PRIMARY KEY (id), 
+    CONSTRAINT fk_live_answer_game_id_live_game FOREIGN KEY(game_id) REFERENCES live_game (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_live_answer_player_id_live_player FOREIGN KEY(player_id) REFERENCES live_player (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_live_answer_question_id_question FOREIGN KEY(question_id) REFERENCES question (id) ON DELETE SET NULL, 
+    CONSTRAINT une_reponse_par_question UNIQUE (player_id, position)
+);
+
+CREATE INDEX ix_live_answer_game_id ON live_answer (game_id);
+
+UPDATE alembic_version SET version_num='0003' WHERE alembic_version.version_num = '0002';
+

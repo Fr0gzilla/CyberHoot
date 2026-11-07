@@ -10,9 +10,11 @@ services:
         condition: service_healthy
     ports:
       - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8080}:8080"
+    # Dossier monté (et non fichier par fichier) : une configuration modifiée est bien vue
+    # au rechargement, même quand l'éditeur remplace le fichier.
+    command: ["nginx", "-c", "/etc/nginx/cyberhoot/nginx.conf", "-g", "daemon off;"]
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/cyberhoot.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx:/etc/nginx/cyberhoot:ro
     read_only: true
     tmpfs:
       - /var/cache/nginx
