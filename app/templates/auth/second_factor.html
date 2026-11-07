@@ -1,0 +1,17 @@
+{% extends "auth/_carte.html" %}
+{% from "macros/forms.html" import champ %}
+{% block title %}Vérification{% endblock %}
+{% block titre_carte %}Double authentification{% endblock %}
+{% block intro %}
+  <p class="text-slate-700 dark:text-slate-300">Saisissez le code à 6 chiffres affiché par votre application d'authentification. Sans votre téléphone, utilisez un code de secours.</p>
+{% endblock %}
+{% block formulaire %}
+  <form method="post" novalidate class="mt-6">
+    {{ form.hidden_tag() }}
+    {{ champ(form.code, autocomplete="one-time-code") }}
+    <button type="submit" class="bouton-principal w-full">Vérifier</button>
+  </form>
+{% endblock %}
+{% block apres %}
+  <p class="mt-6 text-center"><a href="{{ url_for('auth.login') }}">Recommencer la connexion</a></p>
+{% endblock %}

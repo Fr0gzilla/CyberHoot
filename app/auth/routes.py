@@ -2,18 +2,30 @@
 
 from __future__ import annotations
 
+import time
 from urllib.parse import urlsplit
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.wrappers import Response
 
-from app.auth.forms import ConfirmForm, EmailForm, LoginForm, RegisterForm, ResetPasswordForm
-from app.extensions import limiter
-from app.services import accounts
+from app.auth.forms import (
+    CodeForm,
+    ConfirmForm,
+    EmailForm,
+    LoginForm,
+    RegisterForm,
+    ResetPasswordForm,
+)
+from app.extensions import db, limiter
+from app.models import User
+from app.services import accounts, audit, twofa
 from app.services.accounts import Echec
 
 bp = Blueprint("auth", __name__)
+
+CLE_2FA = "connexion_2fa"
+DELAI_2FA = 300  # secondes pour saisir le code après le mot de passe
 
 # Limites par adresse IP : assez larges pour une classe entière derrière une même adresse
 # (réseau d'établissement), assez basses pour freiner l'automatisation. Le verrouillage par
@@ -102,17 +114,74 @@ def login() -> str | Response:
     form = LoginForm()
     if form.validate_on_submit():
         resultat = accounts.authentifier(form.email.data, form.password.data)
-        if resultat.user is not None:
-            # Nouvelle session : rien de l'ancienne n'est conservé (fixation de session).
+        user = resultat.user
+        if user is not None and user.totp_enabled:
+            # Mot de passe juste : deuxième étape. Rien n'est ouvert tant que le code manque.
             session.clear()
-            login_user(resultat.user, remember=bool(form.remember.data))
-            session.permanent = True
-            flash(f"Bienvenue, {resultat.user.username} !", "success")
+            session[CLE_2FA] = {
+                "uid": user.id,
+                "jeton": user.session_token,
+                "souvenir": bool(form.remember.data),
+                "suite": _destination_sure(request.args.get("next")),
+                "t": int(time.time()),
+            }
+            return redirect(url_for("auth.second_factor"))
+        if user is not None:
+            _ouvrir_session(user, bool(form.remember.data))
+            flash(f"Bienvenue, {user.username} !", "success")
             return redirect(_destination_sure(request.args.get("next")))
         if resultat.echec is Echec.NON_ACTIVE:
             accounts.renvoyer_activation(form.email.data)
+        audit.journaliser(
+            "compte_verrouille" if resultat.echec is Echec.VERROUILLE else "connexion_echec",
+            cible=accounts.normaliser_email(form.email.data or "")[:120],
+        )
         flash(MESSAGES_ECHEC[resultat.echec or Echec.IDENTIFIANTS], "error")
     return render_template("auth/login.html", form=form)
+
+
+def _ouvrir_session(user: User, souvenir: bool, methode: str = "mot de passe") -> None:
+    # Nouvelle session : rien de l'ancienne n'est conservé (fixation de session).
+    session.clear()
+    login_user(user, remember=souvenir)
+    session.permanent = True
+    audit.journaliser("connexion", user=user, methode=methode)
+
+
+@bp.route("/verification", methods=["GET", "POST"])
+@limiter.limit("10 per minute;60 per hour", methods=["POST"])
+def second_factor() -> str | Response:
+    """Deuxième étape de la connexion : code de l'application ou code de secours."""
+    attente = session.get(CLE_2FA)
+    if not attente or int(time.time()) - int(attente.get("t", 0)) > DELAI_2FA:
+        session.pop(CLE_2FA, None)
+        flash("Reconnectez-vous : la vérification a expiré.", "info")
+        return redirect(url_for("auth.login"))
+    user = db.session.get(User, attente["uid"])
+    if user is None or user.session_token != attente["jeton"] or not user.is_active:
+        session.pop(CLE_2FA, None)
+        return redirect(url_for("auth.login"))
+    form = CodeForm()
+    if form.validate_on_submit():
+        if user.is_locked():
+            flash(MESSAGES_ECHEC[Echec.VERROUILLE], "error")
+            return redirect(url_for("auth.login"))
+        methode = twofa.verifier(user, form.code.data)
+        if methode is not None:
+            suite = attente["suite"]
+            _ouvrir_session(user, attente["souvenir"], methode)
+            if methode == "secours":
+                audit.journaliser("2fa_code_secours", user=user)
+                flash(
+                    f"Code de secours utilisé : il vous en reste {twofa.codes_restants(user)}.",
+                    "info",
+                )
+            flash(f"Bienvenue, {user.username} !", "success")
+            return redirect(suite)
+        accounts.compter_echec(user)
+        audit.journaliser("connexion_2fa_echec", user=user)
+        form.code.errors = ["Code incorrect ou déjà utilisé."]
+    return render_template("auth/second_factor.html", form=form)
 
 
 @bp.post("/deconnexion")
@@ -121,6 +190,7 @@ def logout() -> Response:
     form = ConfirmForm()
     if not form.validate_on_submit():
         abort(400)
+    audit.journaliser("deconnexion")
     logout_user()
     session.clear()
     flash("Vous êtes déconnecté.", "info")
@@ -148,9 +218,11 @@ def reset_password(token: str) -> str | Response:
         return redirect(url_for("auth.forgot_password"))
     form = ResetPasswordForm()
     if form.validate_on_submit():
-        if accounts.reinitialiser(token, form.password.data) is None:
+        reinitialise = accounts.reinitialiser(token, form.password.data)
+        if reinitialise is None:
             flash("Ce lien n'est plus valable. Faites une nouvelle demande.", "error")
             return redirect(url_for("auth.forgot_password"))
+        audit.journaliser("mot_de_passe_reinitialise", user=reinitialise)
         logout_user()
         session.clear()
         flash("Mot de passe modifié : vous pouvez vous connecter.", "success")

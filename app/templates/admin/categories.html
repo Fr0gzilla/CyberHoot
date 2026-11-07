@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Catégories · Administration{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Catégories</h1>
+  {% include "admin/_nav.html" %}
+  <ul class="space-y-4">
+    {% for c in categories %}
+      <li class="carte">
+        <form method="post" class="grid gap-4 md:grid-cols-[auto_1fr_2fr_auto] md:items-end">
+          {{ form.hidden_tag() }}<input type="hidden" name="id" value="{{ c.id }}">
+          <img src="{{ url_for('static', filename='img/categories/' ~ c.slug ~ '.svg') }}" alt="" width="40" height="40">
+          <div><label for="nom-{{ c.id }}" class="champ-libelle">Nom</label><input id="nom-{{ c.id }}" name="name" class="champ" value="{{ c.name }}" maxlength="80"></div>
+          <div><label for="desc-{{ c.id }}" class="champ-libelle">Description</label><input id="desc-{{ c.id }}" name="description" class="champ" value="{{ c.description }}" maxlength="255"></div>
+          <button type="submit" class="bouton-secondaire">Enregistrer<span class="sr-only"> {{ c.name }}</span></button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

@@ -307,6 +307,7 @@ class Review(db.Model):  # type: ignore[name-defined,misc]
     )
 
     user: Mapped[User] = relationship()
+    quiz: Mapped[Quiz] = relationship()
 
 
 class BadgeRule(enum.StrEnum):

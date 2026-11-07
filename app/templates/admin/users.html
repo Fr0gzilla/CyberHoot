@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Comptes · Administration{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Comptes</h1>
+  {% include "admin/_nav.html" %}
+  <form method="get" class="carte grid gap-4 md:grid-cols-[2fr_1fr_auto] md:items-end" role="search" aria-label="Rechercher un compte">
+    <div><label for="q" class="champ-libelle">Pseudo ou e-mail</label><input id="q" name="q" class="champ" value="{{ request.args.get('q', '') }}" maxlength="100"></div>
+    <div><label for="role" class="champ-libelle">Rôle</label>
+      <select id="role" name="role" class="champ"><option value="">Tous</option>
+        {% for v, l in [('player', 'Joueur'), ('creator', 'Créateur'), ('admin', 'Administrateur')] %}<option value="{{ v }}" {{ 'selected' if request.args.get('role') == v }}>{{ l }}</option>{% endfor %}
+      </select></div>
+    <button class="bouton-principal" type="submit">Rechercher</button>
+  </form>
+  <p class="mt-4 text-sm" role="status">{{ resultats.total }} compte(s)</p>
+  <div class="carte mt-2 overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-slate-200 dark:border-nuit-700"><tr>
+        <th scope="col" class="p-3">Compte</th><th scope="col" class="p-3">État</th><th scope="col" class="p-3">Rôles</th><th scope="col" class="p-3">Actions</th>
+      </tr></thead>
+      <tbody>
+        {% for u in resultats.comptes %}
+          <tr class="border-b border-slate-100 align-top dark:border-nuit-800">
+            <td class="p-3"><span class="font-semibold">{{ u.username }}</span><br><span class="text-slate-600 dark:text-slate-300">{{ u.email }}</span><br>
+              <span class="text-xs text-slate-600 dark:text-slate-300">créé le {{ u.created_at.strftime('%d/%m/%Y') }}{% if u.totp_enabled %} · 2FA ✓{% endif %}</span></td>
+            <td class="p-3">{% if not u.is_enabled %}<span class="font-semibold text-red-700 dark:text-red-300">désactivé</span>{% elif not u.email_verified_at %}non activé{% elif u.is_locked() %}verrouillé{% else %}actif{% endif %}</td>
+            <td class="p-3">
+              {% for v, l in [('creator', 'Créateur'), ('admin', 'Administrateur')] %}
+                {% set a = u.has_role(v) %}
+                <form method="post" action="{{ url_for('admin.user_role', user_id=u.id) }}" class="mb-1" {% if v == 'admin' and not a %}data-confirmer="Donner les droits d'administration à {{ u.username }} ?"{% endif %}>
+                  {{ form.hidden_tag() }}<input type="hidden" name="role" value="{{ v }}"><input type="hidden" name="operation" value="{{ 'retirer' if a else 'ajouter' }}">
+                  <button type="submit" class="rounded-lg border px-2 py-0.5 text-xs {{ 'border-phosphore-700 bg-phosphore-100 text-phosphore-900 dark:bg-nuit-800 dark:text-phosphore-300' if a else 'border-slate-300 dark:border-nuit-700' }}"
+                          aria-pressed="{{ 'true' if a else 'false' }}">{{ '✓ ' if a }}{{ l }}<span class="sr-only"> pour {{ u.username }}</span></button>
+                </form>
+              {% endfor %}
+            </td>
+            <td class="p-3">
+              {% if u.id != current_user.id %}
+                <form method="post" action="{{ url_for('admin.user_activation', user_id=u.id) }}" {% if u.is_enabled %}data-confirmer="Désactiver le compte {{ u.username }} ?"{% endif %}>
+                  {{ form.hidden_tag() }}<input type="hidden" name="actif" value="{{ '0' if u.is_enabled else '1' }}">
+                  <button type="submit" class="{{ 'bouton-danger' if u.is_enabled else 'bouton-secondaire' }} px-3 py-1.5 text-sm">{{ 'Désactiver' if u.is_enabled else 'Réactiver' }}<span class="sr-only"> {{ u.username }}</span></button>
+                </form>
+              {% else %}<span class="text-xs">(vous)</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if resultats.pages > 1 %}
+    <nav class="mt-6 flex items-center justify-center gap-4" aria-label="Pagination">
+      {% set args = request.args.to_dict() %}
+      {% if resultats.page > 1 %}{% set _ = args.update({'page': resultats.page - 1}) %}<a class="bouton-secondaire" href="{{ url_for('admin.users', **args) }}">← Précédente</a>{% endif %}
+      <span>Page {{ resultats.page }} sur {{ resultats.pages }}</span>
+      {% if resultats.page < resultats.pages %}{% set _ = args.update({'page': resultats.page + 1}) %}<a class="bouton-secondaire" href="{{ url_for('admin.users', **args) }}">Suivante →</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}

@@ -360,3 +360,66 @@ INSERT INTO badge (id, code, name, description, icon, rule, threshold, category_
 
 UPDATE alembic_version SET version_num='0004' WHERE alembic_version.version_num = '0003';
 
+-- Running upgrade 0004 -> 0005
+
+CREATE TABLE audit_log (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    created_at DATETIME NOT NULL, 
+    user_id INTEGER, 
+    username VARCHAR(32), 
+    ip VARCHAR(45), 
+    action VARCHAR(40) NOT NULL, 
+    target VARCHAR(120), 
+    details JSON, 
+    CONSTRAINT pk_audit_log PRIMARY KEY (id), 
+    CONSTRAINT fk_audit_log_user_id_user FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE SET NULL
+);
+
+CREATE INDEX ix_audit_log_action ON audit_log (action);
+
+CREATE INDEX ix_audit_log_created_at ON audit_log (created_at);
+
+CREATE INDEX ix_audit_log_user_id ON audit_log (user_id);
+
+CREATE TABLE recovery_code (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    user_id INTEGER NOT NULL, 
+    code_hash VARCHAR(64) NOT NULL, 
+    used_at DATETIME, 
+    CONSTRAINT pk_recovery_code PRIMARY KEY (id), 
+    CONSTRAINT fk_recovery_code_user_id_user FOREIGN KEY(user_id) REFERENCES user (id) ON DELETE CASCADE, 
+    CONSTRAINT uq_recovery_code_code_hash UNIQUE (code_hash)
+);
+
+CREATE INDEX ix_recovery_code_user_id ON recovery_code (user_id);
+
+CREATE TABLE report (
+    id INTEGER NOT NULL AUTO_INCREMENT, 
+    reporter_id INTEGER, 
+    quiz_id INTEGER, 
+    review_id INTEGER, 
+    reason VARCHAR(500) NOT NULL, 
+    status ENUM('open','closed') NOT NULL, 
+    created_at DATETIME NOT NULL, 
+    handled_at DATETIME, 
+    handled_by_id INTEGER, 
+    resolution VARCHAR(255), 
+    CONSTRAINT pk_report PRIMARY KEY (id), 
+    CONSTRAINT fk_report_handled_by_id_user FOREIGN KEY(handled_by_id) REFERENCES user (id) ON DELETE SET NULL, 
+    CONSTRAINT fk_report_quiz_id_quiz FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE, 
+    CONSTRAINT fk_report_reporter_id_user FOREIGN KEY(reporter_id) REFERENCES user (id) ON DELETE SET NULL, 
+    CONSTRAINT fk_report_review_id_review FOREIGN KEY(review_id) REFERENCES review (id) ON DELETE CASCADE
+);
+
+CREATE INDEX ix_report_quiz_id ON report (quiz_id);
+
+CREATE INDEX ix_report_status ON report (status);
+
+ALTER TABLE user ADD COLUMN totp_secret VARCHAR(255);
+
+ALTER TABLE user ADD COLUMN totp_enabled_at DATETIME;
+
+ALTER TABLE user ADD COLUMN totp_last_step INTEGER;
+
+UPDATE alembic_version SET version_num='0005' WHERE alembic_version.version_num = '0004';
+

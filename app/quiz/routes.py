@@ -17,9 +17,9 @@ from werkzeug.wrappers import Response
 
 from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
-from app.models import Media, MediaStatus, Question, Quiz, RoleName
+from app.models import Media, MediaStatus, Question, Quiz, Review, RoleName
 from app.quiz.forms import ReviewForm
-from app.services import catalog, play, progression, quizzes
+from app.services import audit, catalog, play, progression, quizzes, reports
 from app.services import correction as correcteur
 from app.services import media as medias
 
@@ -200,3 +200,37 @@ def badges_page() -> str:
     return render_template(
         "quiz/badges.html", badges=progression.tous_les_badges(), possedes=possedes
     )
+
+
+def _signaler(quiz: Quiz | None, avis: Review | None, retour: str) -> Response:
+    motif = request.form.get("reason", "")
+    if not ConfirmForm().validate_on_submit():
+        abort(400)
+    if not 5 <= len(motif.strip()) <= 500:
+        flash("Expliquez le problème en 5 à 500 caractères.", "error")
+    elif reports.signaler(current_user._get_current_object(), motif, quiz=quiz, avis=avis):
+        cible = f"quiz {quiz.id}" if quiz else f"avis {avis.id}"  # type: ignore[union-attr]
+        audit.journaliser("signalement", cible=cible)
+        flash("Merci : un administrateur va examiner votre signalement.", "success")
+    else:
+        flash("Vous avez déjà signalé ce contenu.", "info")
+    return redirect(retour)
+
+
+@bp.post("/quiz/<int:quiz_id>/signaler")
+@login_required
+@limiter.limit("10 per hour")
+def report_quiz(quiz_id: int) -> Response:
+    quiz = quiz_visible(quiz_id)
+    return _signaler(quiz, None, url_for("quiz.detail", quiz_id=quiz.id))
+
+
+@bp.post("/avis/<int:review_id>/signaler")
+@login_required
+@limiter.limit("10 per hour")
+def report_review(review_id: int) -> Response:
+    avis = db.session.get(Review, review_id)
+    if avis is None:
+        abort(404)
+    quiz = quiz_visible(avis.quiz_id)
+    return _signaler(None, avis, url_for("quiz.detail", quiz_id=quiz.id) + "#avis")

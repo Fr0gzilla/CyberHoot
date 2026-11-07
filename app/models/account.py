@@ -73,6 +73,11 @@ class User(db.Model):  # type: ignore[name-defined,misc]
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     failed_logins: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Double authentification (TOTP) : secret chiffré avec une clé dérivée de SECRET_KEY,
+    # dernier pas de temps accepté (un code ne sert qu'une fois).
+    totp_secret: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    totp_enabled_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    totp_last_step: Mapped[int | None] = mapped_column(Integer, nullable=True)
     # Change à chaque changement de mot de passe : toutes les autres sessions tombent.
     session_token: Mapped[str] = mapped_column(
         String(32), nullable=False, default=nouveau_jeton_session
@@ -99,6 +104,10 @@ class User(db.Model):  # type: ignore[name-defined,misc]
     def get_id(self) -> str:
         # L'identifiant de session porte le jeton : il devient invalide quand le jeton change.
         return f"{self.id}:{self.session_token}"
+
+    @property
+    def totp_enabled(self) -> bool:
+        return self.totp_enabled_at is not None
 
     def has_role(self, name: str) -> bool:
         return any(role.name == name for role in self.roles)

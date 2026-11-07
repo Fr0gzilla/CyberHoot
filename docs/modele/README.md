@@ -1,4 +1,4 @@
-# Modèle de données — v2.1 (comptes, quiz, direct, contenu cyber, badges)
+# Modèle de données — v2.2 (comptes, quiz, direct, contenu, administration)
 
 La base n'a qu'**une source de vérité** : les modèles SQLAlchemy (`app/models/`) et les migrations
 Alembic (`migrations/versions/`). Le fichier [`schema.sql`](schema.sql) est **généré** depuis les
@@ -38,6 +38,11 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | RG27 | Une réponse est juste si elle est exactement la bonne : toutes les bonnes réponses et aucune autre (pour le phishing : tous les indices et aucun passage anodin) ; pour un ordre, toutes les étapes à la bonne place. La même règle vaut en solo et en direct. |
 | RG28 | Un badge est défini une seule fois (données de référence) par une règle et un seuil ; un joueur obtient un badge au plus une fois. Les badges sont attribués à la fin d'une partie en solo, à la fin d'une partie en direct (animateur et joueurs connectés) et à la publication d'un quiz. |
 | RG29 | La progression d'un joueur est sa réussite par catégorie (sur toutes ses réponses), son nombre de parties et sa série de jours consécutifs avec au moins une partie terminée. |
+| RG30 | La double authentification (TOTP) est obligatoire pour accéder à l'administration et possible pour tout compte. Le secret est chiffré ; un code ne sert qu'une fois ; 10 codes de secours hachés, à usage unique. Un code faux compte comme un échec de connexion (verrou au 5e). |
+| RG31 | Le journal d'audit enregistre date, compte, pseudo, adresse IP, action et cible des actions sensibles ; il n'est modifiable par aucune page et est purgé après 12 mois. |
+| RG32 | Un administrateur ne peut ni modifier ses propres rôles ni désactiver son propre compte ; il reste toujours au moins un administrateur actif. Un compte désactivé perd ses sessions. |
+| RG33 | Un joueur peut signaler un quiz ou un avis (motif obligatoire, un signalement ouvert par cible) ; un administrateur le classe, supprime l'avis ou dépublie le quiz. |
+| RG34 | Un utilisateur peut télécharger toutes ses données (JSON) ; à la suppression du compte, ses lignes du journal sont conservées sans lien vers le compte (pseudo seulement). |
 
 ## Dictionnaire des données
 
@@ -54,6 +59,7 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | user | failed_logins | entier | non nul, ≥ 0 | Échecs de connexion consécutifs |
 | user | locked_until | date-heure UTC | nul possible | Fin du verrouillage temporaire |
 | user | session_token | texte (32) | non nul | Renouvelé à chaque changement de mot de passe |
+| user | totp_secret, totp_enabled_at, totp_last_step | texte chiffré, date, entier | nuls possibles | Double authentification |
 | role | id | entier | clé primaire | Identifiant |
 | role | name | texte (20) | non nul, unique | `player`, `creator`, `admin` |
 | role | label | texte (50) | non nul | Libellé affiché |
@@ -104,6 +110,9 @@ Un test vérifie aussi que les migrations et les modèles décrivent exactement 
 | badge | id, code, name, description, icon | | code unique | Badge (données de référence) |
 | badge | rule, threshold, category_id, position | énumération, entiers | catégorie cascade | Règle d'attribution et seuil |
 | user_badge | user_id, badge_id, obtained_at | | clé primaire composée, cascades | Badge obtenu |
+| audit_log | id, created_at, user_id, username, ip, action, target, details | | user SET NULL ; index date, compte, action | Journal d'audit |
+| report | id, reporter_id, quiz_id, review_id, reason, status, created_at, handled_at, handled_by_id, resolution | | quiz et avis cascade ; index statut | Signalement |
+| recovery_code | id, user_id, code_hash, used_at | | empreinte unique, cascade | Code de secours |
 
 ## Modèle conceptuel (MCD)
 
@@ -129,6 +138,11 @@ erDiagram
     JOUEUR_DIRECT ||--o{ REPONSE_DIRECT : "donne (0,n) / donnée par (1,1)"
     UTILISATEUR }o--o{ BADGE : "obtient (0,n) / obtenu par (0,n)"
     CATEGORIE |o--o{ BADGE : "récompense (0,n) / porte sur (0,1)"
+    UTILISATEUR |o--o{ JOURNAL : "est à l'origine de (0,n) / (0,1)"
+    UTILISATEUR |o--o{ SIGNALEMENT : "signale (0,n) / signalé par (0,1)"
+    QUIZ |o--o{ SIGNALEMENT : "fait l'objet de (0,n) / vise (0,1)"
+    AVIS |o--o{ SIGNALEMENT : "fait l'objet de (0,n) / vise (0,1)"
+    UTILISATEUR ||--o{ CODE_SECOURS : "possède (0,10) / appartient à (1,1)"
     UTILISATEUR {
         string pseudo
         string email
@@ -154,7 +168,8 @@ erDiagram
 
 - **role** (<u>id</u>, name, label)
 - **user** (<u>id</u>, username, email, password_hash, is_enabled, email_verified_at, created_at,
-  updated_at, last_login_at, failed_logins, locked_until, session_token)
+  updated_at, last_login_at, failed_logins, locked_until, totp_secret, totp_enabled_at,
+  totp_last_step, session_token)
 - **user_role** (<u>#user_id</u>, <u>#role_id</u>)
 - **account_token** (<u>id</u>, #user_id, purpose, token_hash, created_at, expires_at, used_at)
 - **category** (<u>id</u>, slug, name, description, position)
@@ -169,6 +184,10 @@ erDiagram
 - **review** (<u>id</u>, #user_id, #quiz_id, rating, comment, created_at, updated_at)
 - **badge** (<u>id</u>, code, name, description, icon, rule, threshold, #category_id, position)
 - **user_badge** (<u>#user_id</u>, <u>#badge_id</u>, obtained_at)
+- **audit_log** (<u>id</u>, created_at, #user_id, username, ip, action, target, details)
+- **report** (<u>id</u>, #reporter_id, #quiz_id, #review_id, reason, status, created_at, handled_at,
+  #handled_by_id, resolution)
+- **recovery_code** (<u>id</u>, #user_id, code_hash, used_at)
 - **live_game** (<u>id</u>, pin, #host_id, #quiz_id, status, question_ids, current_index, time_limit,
   max_players, question_started_at, question_deadline, paused_remaining_ms, version, created_at,
   last_activity_at, ended_at)
@@ -263,4 +282,24 @@ stateDiagram-v2
     lobby --> finished : terminer / 3 h sans activité
     question --> finished : terminer
     finished --> [*] : effacée 24 h plus tard
+```
+
+## Séquence : connexion avec double authentification
+
+```mermaid
+sequenceDiagram
+    actor U as Utilisateur
+    participant A as Application
+    participant B as Base
+    U->>A: POST /compte/connexion (e-mail, mot de passe)
+    A->>B: mot de passe juste ? compte actif ? non verrouillé ?
+    A-->>U: session « en attente » (5 min), aucune ouverture
+    U->>A: POST /compte/verification (code à 6 chiffres)
+    A->>B: déchiffre le secret, vérifie le code (pas de temps jamais utilisé) ou un code de secours
+    alt code juste
+        A->>B: retient le pas utilisé, journal « connexion »
+        A-->>U: session ouverte
+    else code faux
+        A->>B: échec compté (verrou au 5e), journal « code refusé »
+    end
 ```

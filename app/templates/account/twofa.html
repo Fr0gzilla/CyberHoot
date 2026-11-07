@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "macros/forms.html" import champ %}
+{% block title %}Double authentification{% endblock %}
+{% block content %}
+  <p><a href="{{ url_for('account.profile') }}">← Mon profil</a></p>
+  <div class="mx-auto mt-4 max-w-2xl">
+    <h1>Double authentification</h1>
+    <p class="mt-2 text-slate-700 dark:text-slate-300">
+      En plus du mot de passe, un code à 6 chiffres affiché par une application (par exemple une application d'authentification open source) sera demandé à chaque connexion.
+      Même si votre mot de passe est volé, votre compte reste protégé.
+      {% if current_user.has_role('admin') %}<strong>Elle est obligatoire pour les administrateurs.</strong>{% endif %}
+    </p>
+
+    {% if current_user.totp_enabled %}
+      <div class="carte mt-6">
+        <p class="font-mono text-lg font-bold text-phosphore-800 dark:text-phosphore-300">✓ Activée depuis le {{ current_user.totp_enabled_at.strftime('%d/%m/%Y') }}</p>
+        <p class="mt-2">Codes de secours restants : <strong class="font-mono">{{ restants }}</strong> sur 10.</p>
+        <form method="post" action="{{ url_for('account.twofa_codes') }}" class="mt-6" novalidate>
+          {{ form.hidden_tag() }}
+          <h2 class="text-lg">Nouveaux codes de secours</h2>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-300">Les anciens codes ne fonctionneront plus.</p>
+          <div class="mt-3">{{ champ(form.code, autocomplete="one-time-code") }}</div>
+          <button type="submit" class="bouton-secondaire">Générer de nouveaux codes</button>
+        </form>
+        {% if not current_user.has_role('admin') %}
+          <form method="post" action="{{ url_for('account.twofa_disable') }}" class="mt-8 border-t border-slate-200 pt-6 dark:border-nuit-700" novalidate
+                data-confirmer="Désactiver la double authentification ?">
+            {{ form.hidden_tag() }}
+            <h2 class="text-lg">Désactiver</h2>
+            <div class="mt-3">
+              <label for="code-desactiver" class="champ-libelle">Code à 6 chiffres (ou code de secours)</label>
+              <input id="code-desactiver" name="code" class="champ" autocomplete="one-time-code" required>
+            </div>
+            <button type="submit" class="bouton-danger mt-4">Désactiver la double authentification</button>
+          </form>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="carte mt-6">
+        <h2>1. Scannez ce code avec votre application</h2>
+        <div class="mt-4 flex flex-wrap items-center gap-6">
+          <div class="w-48 rounded-xl bg-white p-3">{{ qr }}</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm text-slate-700 dark:text-slate-300">Impossible de scanner ? Saisissez cette clé dans l'application :</p>
+            <p class="mt-2 break-all rounded-lg bg-slate-100 p-3 font-mono text-sm dark:bg-nuit-800">{{ secret }}</p>
+          </div>
+        </div>
+        <h2 class="mt-8">2. Saisissez le code affiché</h2>
+        <form method="post" action="{{ url_for('account.twofa_enable') }}" class="mt-4 max-w-sm" novalidate>
+          {{ form.hidden_tag() }}
+          {{ champ(form.code, autocomplete="one-time-code") }}
+          <button type="submit" class="bouton-principal">Activer</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

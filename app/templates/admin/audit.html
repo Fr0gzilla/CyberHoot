@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Journal · Administration{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Journal d'audit</h1>
+  {% include "admin/_nav.html" %}
+  <form method="get" class="carte grid gap-4 md:grid-cols-[2fr_1fr_1fr_auto] md:items-end" aria-label="Filtrer le journal">
+    <div><label for="action" class="champ-libelle">Action</label>
+      <select id="action" name="action" class="champ"><option value="">Toutes</option>
+        {% for code, libelle in actions.items() %}<option value="{{ code }}" {{ 'selected' if request.args.get('action') == code }}>{{ libelle }}</option>{% endfor %}
+      </select></div>
+    <div><label for="pseudo" class="champ-libelle">Pseudo</label><input id="pseudo" name="pseudo" class="champ" value="{{ request.args.get('pseudo', '') }}" maxlength="32"></div>
+    <div><label for="jours" class="champ-libelle">Période</label>
+      <select id="jours" name="jours" class="champ">
+        {% for n, l in [(0, 'Tout'), (1, '24 h'), (7, '7 jours'), (30, '30 jours')] %}<option value="{{ n }}" {{ 'selected' if request.args.get('jours', '0') == n|string }}>{{ l }}</option>{% endfor %}
+      </select></div>
+    <button class="bouton-principal" type="submit">Filtrer</button>
+  </form>
+  <p class="mt-4 text-sm" role="status">{{ resultats.total }} entrée(s) · conservées 12 mois · non modifiables</p>
+  <div class="carte mt-2 overflow-x-auto p-0">
+    <table class="w-full text-left text-sm">
+      <thead class="border-b border-slate-200 dark:border-nuit-700"><tr>
+        <th scope="col" class="p-3">Date (UTC)</th><th scope="col" class="p-3">Compte</th><th scope="col" class="p-3">Action</th><th scope="col" class="p-3">Cible</th><th scope="col" class="p-3">Adresse IP</th>
+      </tr></thead>
+      <tbody>
+        {% for l in resultats.lignes %}
+          <tr class="border-b border-slate-100 dark:border-nuit-800">
+            <td class="whitespace-nowrap p-3 font-mono">{{ l.created_at.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+            <td class="p-3">{{ l.username or '—' }}</td>
+            <td class="p-3 {{ 'font-semibold text-red-700 dark:text-red-300' if 'echec' in l.action or 'verrouille' in l.action }}">{{ actions.get(l.action, l.action) }}</td>
+            <td class="p-3">{{ l.target or '' }}</td>
+            <td class="p-3 font-mono">{{ l.ip or '' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if resultats.pages > 1 %}
+    <nav class="mt-6 flex items-center justify-center gap-4" aria-label="Pagination">
+      {% set args = request.args.to_dict() %}
+      {% if resultats.page > 1 %}{% set _ = args.update({'page': resultats.page - 1}) %}<a class="bouton-secondaire" href="{{ url_for('admin.audit_log', **args) }}">← Plus récentes</a>{% endif %}
+      <span>Page {{ resultats.page }} sur {{ resultats.pages }}</span>
+      {% if resultats.page < resultats.pages %}{% set _ = args.update({'page': resultats.page + 1}) %}<a class="bouton-secondaire" href="{{ url_for('admin.audit_log', **args) }}">Plus anciennes →</a>{% endif %}
+    </nav>
+  {% endif %}
+{% endblock %}

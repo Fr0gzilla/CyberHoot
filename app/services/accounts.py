@@ -157,14 +157,7 @@ def authentifier(email: str, mot_de_passe: str) -> ResultatConnexion:
         return ResultatConnexion(echec=Echec.VERROUILLE)
 
     if not passwords.verifier(user.password_hash, mot_de_passe):
-        user.failed_logins += 1
-        if user.failed_logins >= current_app.config["VERROU_ECHECS_MAX"]:
-            user.locked_until = maintenant + timedelta(
-                minutes=current_app.config["VERROU_DUREE_MINUTES"]
-            )
-            user.failed_logins = 0
-            journal.warning("connexion : compte %s verrouillé après trop d'échecs", user.id)
-        db.session.commit()
+        compter_echec(user)
         return ResultatConnexion(echec=Echec.IDENTIFIANTS)
 
     # Mot de passe juste : on peut dire pourquoi le compte ne s'ouvre pas.
@@ -181,6 +174,16 @@ def authentifier(email: str, mot_de_passe: str) -> ResultatConnexion:
     db.session.commit()
     journal.info("connexion : compte %s", user.id)
     return ResultatConnexion(user=user)
+
+
+def compter_echec(user: User) -> None:
+    """Un échec de plus (mot de passe ou code de double authentification) ; verrou au 5e."""
+    user.failed_logins += 1
+    if user.failed_logins >= current_app.config["VERROU_ECHECS_MAX"]:
+        user.locked_until = utcnow() + timedelta(minutes=current_app.config["VERROU_DUREE_MINUTES"])
+        user.failed_logins = 0
+        journal.warning("connexion : compte %s verrouillé après trop d'échecs", user.id)
+    db.session.commit()
 
 
 def renvoyer_activation(email: str) -> None:
@@ -265,6 +268,10 @@ def changer_mot_de_passe(user: User, actuel: str, nouveau: str) -> bool:
 def changer_pseudo(user: User, username: str) -> None:
     user.username = username.strip()
     db.session.commit()
+
+
+def verifier_mot_de_passe(user: User, mot_de_passe: str) -> bool:
+    return passwords.verifier(user.password_hash, mot_de_passe)
 
 
 def supprimer_compte(user: User, mot_de_passe: str) -> bool:

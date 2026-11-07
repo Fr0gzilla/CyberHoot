@@ -2,8 +2,28 @@
 {% from "macros/quiz.html" import meta %}
 {% block title %}Administration{% endblock %}
 {% block content %}
-  <h1>Administration</h1>
-  <section class="mt-6" aria-labelledby="titre-attente">
+  <h1 class="mb-4">Administration</h1>
+  {% include "admin/_nav.html" %}
+
+  <section aria-labelledby="titre-chiffres">
+    <h2 id="titre-chiffres" class="sr-only">Chiffres clés</h2>
+    <div class="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      {% for libelle, valeur in [('Comptes', stats.comptes), ('Joueurs actifs (30 j)', stats.actifs_30j),
+                                 ('Parties (30 j)', stats.parties_30j), ('Parties en direct (30 j)', stats.direct_30j),
+                                 ('Quiz publiés', stats.quiz_publies), ('Signalements ouverts', signalements)] %}
+        <div class="carte p-4"><p class="text-sm text-slate-600 dark:text-slate-300">{{ libelle }}</p><p class="mt-1 font-mono text-2xl font-extrabold">{{ valeur }}</p></div>
+      {% endfor %}
+    </div>
+    <div class="carte mt-4 overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <caption class="mb-2 text-left font-semibold">Parties terminées par jour (14 derniers jours, UTC)</caption>
+        <thead><tr>{% for jour, _ in stats.parties_par_jour %}<th scope="col" class="px-1 font-mono font-normal">{{ jour.strftime('%d/%m') }}</th>{% endfor %}</tr></thead>
+        <tbody><tr>{% for _, n in stats.parties_par_jour %}<td class="px-1 font-mono font-bold">{{ n }}</td>{% endfor %}</tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mt-8" aria-labelledby="titre-attente">
     <h2 id="titre-attente">À valider <span class="etiquette ml-2">{{ en_attente|length }}</span></h2>
     {% if en_attente %}
       <ul class="mt-4 space-y-4">
@@ -34,5 +54,4 @@
       {% endfor %}
     </ul>
   </section>
-  <p class="mt-10 text-sm text-slate-600 dark:text-slate-300">Gestion des comptes, catégories et badges : version 2.2. En attendant : <code class="font-mono">flask --app wsgi donner-role --email … --role creator</code>.</p>
 {% endblock %}

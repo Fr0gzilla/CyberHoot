@@ -1,6 +1,7 @@
 """Modèles de données. La base n'a qu'une source de vérité : ces modèles et les migrations."""
 
 from app.models.account import AccountToken, Role, RoleName, TokenPurpose, User, user_role, utcnow
+from app.models.admin import AuditLog, RecoveryCode, Report, ReportStatus
 from app.models.live import LiveAnswer, LiveGame, LivePlayer, LiveStatus
 from app.models.quiz import (
     DIFFICULTE_LIBELLES,
@@ -29,6 +30,7 @@ __all__ = [
     "TYPE_LIBELLES",
     "AccountToken",
     "AnswerOption",
+    "AuditLog",
     "Badge",
     "BadgeRule",
     "Category",
@@ -45,6 +47,9 @@ __all__ = [
     "QuestionKind",
     "Quiz",
     "QuizStatus",
+    "RecoveryCode",
+    "Report",
+    "ReportStatus",
     "Review",
     "Role",
     "RoleName",

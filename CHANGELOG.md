@@ -1,5 +1,21 @@
 # Journal des versions
 
+## v2.2 — Administrer
+
+- Double authentification TOTP : activation par code QR, connexion en deux étapes (5 min),
+  secret chiffré en base, chaque code utilisable une seule fois, 10 codes de secours hachés,
+  codes faux comptés dans le verrouillage. Obligatoire pour accéder à l'administration.
+- Journal d'audit : connexions (réussies, échouées, verrouillages), mots de passe, double
+  authentification, suppressions, exports, toutes les actions d'administration ; adresse IP ;
+  consultation filtrable ; aucune modification possible ; purge après 12 mois.
+- Administration : tableau de bord (comptes, joueurs actifs, parties, direct, signalements,
+  parties par jour), gestion des comptes (recherche, rôles, désactivation, garde-fous : pas sur
+  soi-même, toujours un administrateur), catégories, badges (nom, description, icône, seuil).
+- Signalements de quiz et d'avis par les joueurs ; traitement par les administrateurs
+  (classer, supprimer l'avis, dépublier le quiz).
+- Données personnelles : export complet en JSON depuis le profil, registre des traitements
+  (`docs/rgpd/registre.md`), politique de confidentialité complétée.
+
 ## v2.1 — Contenu cyber
 
 - Nouveaux types de questions, en solo comme en direct :

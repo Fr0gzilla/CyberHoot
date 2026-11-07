@@ -121,3 +121,10 @@ class DeleteAccountForm(FlaskForm):  # type: ignore[misc]
 
 class ConfirmForm(FlaskForm):  # type: ignore[misc]
     """Formulaire vide : seulement le jeton CSRF (déconnexion, actions à un bouton)."""
+
+
+class CodeForm(FlaskForm):  # type: ignore[misc]
+    code = StringField(
+        "Code à 6 chiffres (ou code de secours)",
+        validators=[DataRequired(), Length(min=6, max=20)],
+    )

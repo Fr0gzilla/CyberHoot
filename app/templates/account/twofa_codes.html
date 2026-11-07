@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Codes de secours{% endblock %}
+{% block content %}
+  <div class="mx-auto max-w-xl">
+    <div class="carte">
+      <h1 class="text-2xl">Vos codes de secours</h1>
+      <p class="mt-2 text-slate-700 dark:text-slate-300">
+        <strong>Notez-les maintenant et rangez-les en lieu sûr</strong> (par exemple dans votre gestionnaire de mots de passe) :
+        ils ne seront plus jamais affichés. Chacun permet une seule connexion si vous n'avez plus votre téléphone.
+      </p>
+      <ul class="mt-6 grid grid-cols-2 gap-2 font-mono text-lg" aria-label="Codes de secours">
+        {% for code in codes %}<li class="rounded-lg bg-slate-100 px-3 py-2 text-center dark:bg-nuit-800">{{ code }}</li>{% endfor %}
+      </ul>
+      <p class="mt-6"><a class="bouton-principal" href="{{ url_for('account.twofa_page') }}">J'ai noté mes codes</a></p>
+    </div>
+  </div>
+{% endblock %}

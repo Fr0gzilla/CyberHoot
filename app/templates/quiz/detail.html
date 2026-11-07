@@ -12,6 +12,17 @@
       <p class="mt-4 text-lg text-slate-700 dark:text-slate-300">{{ quiz.description }}</p>
       <p class="mt-4">{{ etoiles(note) }}</p>
       {% if quiz.creator %}<p class="mt-2 text-sm text-slate-600 dark:text-slate-300">Créé par {{ quiz.creator.username }}</p>{% endif %}
+      {% if current_user.is_authenticated and quiz.is_published %}
+        <details class="mt-4 text-sm">
+          <summary class="cursor-pointer text-slate-600 dark:text-slate-300">Signaler un problème dans ce quiz</summary>
+          <form method="post" action="{{ url_for('quiz.report_quiz', quiz_id=quiz.id) }}" class="mt-3 max-w-xl">
+            {{ form.hidden_tag() }}
+            <label for="motif-quiz" class="champ-libelle">Qu'est-ce qui ne va pas ?</label>
+            <textarea id="motif-quiz" name="reason" rows="2" class="champ" maxlength="500" required></textarea>
+            <button type="submit" class="bouton-secondaire mt-2 px-3 py-1.5 text-sm">Envoyer le signalement</button>
+          </form>
+        </details>
+      {% endif %}
     </section>
     <aside class="carte self-start">
       <h2>Jouer</h2>
@@ -67,6 +78,17 @@
           <li class="carte">
             <p><span class="font-semibold">{{ a.user.username }}</span> · <span aria-label="{{ a.rating }} sur 5"><span aria-hidden="true" class="text-amber-600 dark:text-amber-300">{{ '★' * a.rating }}{{ '☆' * (5 - a.rating) }}</span></span> · <span class="text-sm text-slate-600 dark:text-slate-300">{{ a.updated_at.strftime('%d/%m/%Y') }}</span></p>
             {% if a.comment %}<p class="mt-2 whitespace-pre-line">{{ a.comment }}</p>{% endif %}
+            {% if current_user.is_authenticated and a.user_id != current_user.id %}
+              <details class="mt-2 text-sm">
+                <summary class="cursor-pointer text-slate-600 dark:text-slate-300">Signaler cet avis</summary>
+                <form method="post" action="{{ url_for('quiz.report_review', review_id=a.id) }}" class="mt-2">
+                  {{ form.hidden_tag() }}
+                  <label for="motif-avis-{{ a.id }}" class="champ-libelle">Motif</label>
+                  <input id="motif-avis-{{ a.id }}" name="reason" class="champ" maxlength="500" required>
+                  <button type="submit" class="bouton-secondaire mt-2 px-3 py-1.5 text-sm">Signaler</button>
+                </form>
+              </details>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>

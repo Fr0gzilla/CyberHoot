@@ -1,0 +1,9 @@
+{# Menu de l'administration. #}
+{% set liens = [('admin.dashboard', 'Tableau de bord'), ('admin.users', 'Comptes'), ('admin.categories', 'Catégories'),
+                ('admin.badges', 'Badges'), ('admin.reports_page', 'Signalements'), ('admin.audit_log', 'Journal')] %}
+<nav class="mb-6 flex flex-wrap gap-2" aria-label="Administration">
+  {% for endpoint, libelle in liens %}
+    <a href="{{ url_for(endpoint) }}" class="lien-nav {{ 'bg-phosphore-100 text-phosphore-900 dark:bg-nuit-800 dark:text-phosphore-300' if request.endpoint == endpoint }}"
+       {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ libelle }}</a>
+  {% endfor %}
+</nav>

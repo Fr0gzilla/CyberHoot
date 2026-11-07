@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Signalements · Administration{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Signalements</h1>
+  {% include "admin/_nav.html" %}
+  {% if signalements %}
+    <ul class="space-y-4">
+      {% for s in signalements %}
+        <li class="carte">
+          <p class="text-sm text-slate-600 dark:text-slate-300">Le {{ s.created_at.strftime('%d/%m/%Y à %H:%M') }} (UTC), par {{ s.reporter.username if s.reporter else 'compte supprimé' }}</p>
+          {% if s.quiz %}<p class="mt-2">Quiz : <a href="{{ url_for('admin.review', quiz_id=s.quiz.id) }}">{{ s.quiz.title }}</a></p>{% endif %}
+          {% if s.review %}<p class="mt-2">Avis de {{ s.review.user.username }} sur « {{ s.review.quiz.title }} » : <q class="italic">{{ s.review.comment or '(sans commentaire)' }}</q></p>{% endif %}
+          <p class="mt-2"><strong>Motif :</strong> {{ s.reason }}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {% for action, libelle, classe in [('supprimer-avis', "Supprimer l'avis", 'bouton-danger'), ('depublier', 'Dépublier le quiz', 'bouton-danger'), ('clore', 'Classer sans suite', 'bouton-secondaire')] %}
+              {% if (action == 'supprimer-avis' and s.review) or (action == 'depublier' and s.quiz and s.quiz.is_published) or action == 'clore' %}
+                <form method="post" action="{{ url_for('admin.report_action', report_id=s.id) }}">
+                  {{ form.hidden_tag() }}<input type="hidden" name="action" value="{{ action }}">
+                  <button type="submit" class="{{ classe }} px-3 py-1.5 text-sm">{{ libelle }}</button>
+                </form>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="carte">Aucun signalement en attente.</p>
+  {% endif %}
+{% endblock %}

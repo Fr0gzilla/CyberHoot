@@ -149,12 +149,33 @@ def compte_actif(app: Flask) -> User:
     return user
 
 
+SECRET_TOTP = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP"
+
+
+def code_totp(secret: str = SECRET_TOTP) -> str:
+    import pyotp
+
+    return pyotp.TOTP(secret).now()
+
+
 def connecter(client: FlaskClient, email: str = "alice@example.org", mdp: str = MOT_DE_PASSE):  # type: ignore[no-untyped-def]
+    """Connexion complète ; passe la double authentification si le compte l'a activée."""
     jeton = jeton_csrf(client, "/compte/connexion")
-    return client.post(
+    reponse = client.post(
         "/compte/connexion",
         data={"email": email, "password": mdp, "csrf_token": jeton},
     )
+    if reponse.headers.get("Location", "").endswith("/compte/verification"):
+        # Un code ne sert qu'une fois : on oublie le dernier pas pour les connexions répétées.
+        from sqlalchemy import update
+
+        db.session.execute(update(User).where(User.email == email).values(totp_last_step=None))
+        db.session.commit()
+        jeton = jeton_csrf(client, "/compte/verification")
+        reponse = client.post(
+            "/compte/verification", data={"code": code_totp(), "csrf_token": jeton}
+        )
+    return reponse
 
 
 def creer_compte(app: Flask, pseudo: str, *roles: RoleName) -> User:
@@ -181,6 +202,19 @@ def createur(app: Flask) -> User:
     return creer_compte(app, "createur", RoleName.CREATOR)
 
 
+def activer_2fa(user: User) -> None:
+    from app.models import utcnow
+    from app.services import twofa
+
+    user.totp_secret = twofa.chiffrer(SECRET_TOTP)
+    user.totp_enabled_at = utcnow()
+    db.session.commit()
+
+
 @pytest.fixture
 def admin(app: Flask) -> User:
-    return creer_compte(app, "chef", RoleName.CREATOR, RoleName.ADMIN)
+    """Administrateur, double authentification activée (obligatoire pour l'administration)."""
+    user = creer_compte(app, "chef", RoleName.CREATOR, RoleName.ADMIN)
+    with app.test_request_context():
+        activer_2fa(user)
+    return user

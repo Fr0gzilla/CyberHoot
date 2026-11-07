@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Badges · Administration{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Badges</h1>
+  {% include "admin/_nav.html" %}
+  <p class="mb-4 text-slate-700 dark:text-slate-300">La règle de chaque badge est fixe ; vous pouvez changer son nom, sa description, son icône et son seuil.</p>
+  <ul class="space-y-4">
+    {% for b in badges %}
+      <li class="carte">
+        <form method="post" class="grid gap-4 md:grid-cols-[5rem_1fr_2fr_6rem_auto] md:items-end">
+          {{ form.hidden_tag() }}<input type="hidden" name="id" value="{{ b.id }}">
+          <div><label for="ic-{{ b.id }}" class="champ-libelle">Icône</label><input id="ic-{{ b.id }}" name="icon" class="champ text-center text-xl" value="{{ b.icon }}" maxlength="8"></div>
+          <div><label for="nom-{{ b.id }}" class="champ-libelle">Nom</label><input id="nom-{{ b.id }}" name="name" class="champ" value="{{ b.name }}" maxlength="80"></div>
+          <div><label for="desc-{{ b.id }}" class="champ-libelle">Description</label><input id="desc-{{ b.id }}" name="description" class="champ" value="{{ b.description }}" maxlength="255"></div>
+          <div><label for="seuil-{{ b.id }}" class="champ-libelle">Seuil</label><input id="seuil-{{ b.id }}" name="threshold" type="number" min="1" max="1000" class="champ" value="{{ b.threshold }}"></div>
+          <button type="submit" class="bouton-secondaire">Enregistrer<span class="sr-only"> {{ b.name }}</span></button>
+        </form>
+        <p class="mt-2 font-mono text-xs text-slate-600 dark:text-slate-300">règle : {{ b.rule.value }}{% if b.category %} · {{ b.category.name }}{% endif %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

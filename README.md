@@ -16,7 +16,7 @@ Refonte complète de Cyber-hoot, projet de groupe réalisé en BTS SIO (dépôt 
 | **v1.1 — Quiz solides** | Catalogue (recherche, filtres, notes), parties en solo corrigées côté serveur, éditeur de quiz, validation par un administrateur, images analysées, avis, statistiques | ✅ |
 | **v2.0 — En direct** | Parties en direct : code PIN et QR code, salle d'attente, chrono, points selon la rapidité, histogramme, classement et podium, pause, exclusion, export CSV ; testé avec 200 joueurs ([rapport](docs/charge-v2.0.md)) | ✅ |
 | **v2.1 — Contenu cyber** | Questions vrai/faux, « repérer le phishing » et « remettre dans l'ordre », 18 badges, progression par thème et séries, 8 quiz de démonstration de 10 questions | ✅ |
-| v2.2 — Administrer | Double authentification, journal d'audit, données personnelles | à venir |
+| **v2.2 — Administrer** | Double authentification (obligatoire pour les administrateurs), journal d'audit, gestion des comptes, catégories et badges, signalements, tableau de bord, export de ses données, [registre RGPD](docs/rgpd/registre.md) | ✅ |
 | v3.0 — Finition | Accessibilité complète, HTTPS, dossier technique | à venir |
 
 ## Démarrer
@@ -29,6 +29,9 @@ make up        # construit et démarre la pile : http://localhost:8080
 make admin     # crée un compte administrateur
 make demo      # ajoute les quiz de démonstration (auteur : le compte demandé)
 ```
+
+L'administration exige la double authentification : à la première visite, scannez le code QR
+avec une application d'authentification (TOTP) et gardez les codes de secours.
 
 Donner le rôle de créateur à un compte :
 `docker compose exec app flask --app wsgi donner-role --email <adresse> --role creator`.
@@ -73,6 +76,8 @@ Navigateur ──► Nginx (seul port publié, limite de débit)
 - Changer de mot de passe ferme toutes les autres sessions.
 - Protection CSRF sur tous les formulaires ; CSP sans `unsafe-inline` ; aucun JavaScript en
   ligne ; en-têtes de sécurité complets.
+- Double authentification TOTP (secret chiffré, codes à usage unique, codes de secours hachés),
+  obligatoire pour l'administration ; journal d'audit non modifiable, conservé 12 mois.
 - Configuration de production par défaut : l'application refuse de démarrer sans vrai secret.
 - Conteneurs durcis : compte sans privilège, lecture seule, capacités retirées ; base et Redis
   injoignables depuis l'extérieur.
