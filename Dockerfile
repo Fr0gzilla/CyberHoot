@@ -2,7 +2,7 @@
 # Image multi-étapes : la feuille de style est compilée à part, l'image finale ne contient
 # ni Node ni outils de compilation, et l'application tourne sous un compte sans privilège.
 
-FROM node:22-alpine AS css
+FROM node:25-alpine AS css
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
