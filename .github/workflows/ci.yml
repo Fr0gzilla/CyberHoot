@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Dépendances (versions figées et vérifiées par empreinte)
@@ -53,7 +53,7 @@ jobs:
       TEST_DATABASE_URL: mysql+pymysql://test:test-ci-uniquement@127.0.0.1:3306/cyberhoot_test?charset=utf8mb4
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - run: pip install --require-hashes -r requirements.txt -r requirements-dev.txt
