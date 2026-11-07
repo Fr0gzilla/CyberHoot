@@ -74,7 +74,7 @@ jobs:
       - name: Construction de l'image de production
         run: docker build --target production -t cyberhoot:ci .
       - name: Analyse de l'image (vulnérabilités critiques ou élevées corrigeables)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: cyberhoot:ci
           severity: CRITICAL,HIGH
