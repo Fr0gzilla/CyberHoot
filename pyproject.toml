@@ -11,7 +11,7 @@ target-version = "py312"
 extend-exclude = ["migrations/versions"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "N", "C4", "PT", "RET"]
+select = ["E", "F", "W", "I", "B", "BLE", "UP", "S", "SIM", "RUF", "N", "C4", "PT", "RET"]
 ignore = ["RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.per-file-ignores]

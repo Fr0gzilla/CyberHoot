@@ -23,6 +23,8 @@ jobs:
           python-version: "3.12"
       - name: Dépendances (versions figées et vérifiées par empreinte)
         run: pip install --require-hashes -r requirements.txt -r requirements-dev.txt
+      - name: Aucun fichier versionné n'est censé être ignoré
+        run: test -z "$(git ls-files -ci --exclude-standard)"
       - name: Ruff (lint)
         run: ruff check .
       - name: Ruff (format)

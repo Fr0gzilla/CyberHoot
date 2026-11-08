@@ -8,6 +8,7 @@ secrets/
 uploads/
 
 # Généré
+.cache/
 app/static/css/app.css
 node_modules/
 __pycache__/
@@ -25,3 +26,7 @@ build/
 .DS_Store
 .idea/
 .vscode/
+
+# Réglages propres à un serveur
+docker-compose.override.yml
+acme/
