@@ -1,5 +1,26 @@
 # Journal des versions
 
+## v3.0 — Finition
+
+- HTTPS au proxy : TLS 1.2 et 1.3, HTTP/2, redirection permanente depuis HTTP, HSTS (un an),
+  cookies `Secure` par défaut ; certificat auto-signé créé par `make secrets` ; guide pour un
+  vrai certificat Let's Encrypt (`docs/https.md`). L'hôte est transmis avec son port, ce qui
+  corrige le refus CSRF (`Referer`) en HTTPS sur un port non standard.
+- Accessibilité : revue WCAG 2.2 AA outillée (`make accessibilite` : axe-core sur 30 pages en
+  thème clair et sombre, parcours au clavier seul) ; liens soulignés dans le texte, titre de
+  niveau 1 sur les écrans de question, focus sur le premier champ fautif. Rapport :
+  `docs/accessibilite.md`.
+- `docs/avant-apres.md` : les 20 défauts de l'ancienne version, leur correction et le test qui
+  le prouve.
+- Nouveaux contrôles automatiques : aucun fichier de plus de 400 lignes, aucun HTML injecté
+  par le JavaScript, documentation d'accord avec la configuration, aucun fichier versionné
+  ignoré, règle ruff contre les `except` trop larges.
+- Découpage des services trop longs : bilan et classement du direct, pseudos, entretien,
+  décision de l'administrateur (`moderation`), réception des images dans `media`.
+- `SECURITY.md` complété ; captures d'écran dans le README ; dossier technique
+  (`docs/dossier/`).
+- gunicorn 26 : interface de pilotage désactivée (système de fichiers en lecture seule).
+
 ## v2.2 — Administrer
 
 - Double authentification TOTP : activation par code QR, connexion en deux étapes (5 min),
