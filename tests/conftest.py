@@ -18,12 +18,12 @@ from alembic import command
 from alembic.config import Config as AlembicConfig
 from flask import Flask
 from flask.testing import FlaskClient
-from sqlalchemy import create_engine, delete, text
+from sqlalchemy import create_engine, delete, select, text
 
 from app import create_app
 from app.config import charger_config
 from app.extensions import db, limiter
-from app.models import RoleName, User
+from app.models import AuditLog, LiveGame, Quiz, RoleName, User
 from app.services import accounts, mail
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -218,3 +218,27 @@ def admin(app: Flask) -> User:
     with app.test_request_context():
         activer_2fa(user)
     return user
+
+
+@pytest.fixture
+def salle(app: Flask, createur: User) -> tuple[FlaskClient, LiveGame, Quiz]:
+    """Partie en direct lancée par le créateur (quiz de 3 questions), encore en salle d'attente."""
+    from tests.direct import lancer
+    from tests.fabrique import creer_quiz
+
+    quiz = creer_quiz(app, createur, n=3)
+    animateur = app.test_client()
+    connecter(animateur, "createur@example.org")
+    return animateur, lancer(animateur, quiz), quiz
+
+
+def actions(user: User | None = None) -> list[str]:
+    """Actions inscrites au journal d'audit, dans l'ordre (pour un compte, ou toutes)."""
+    requete = select(AuditLog.action).order_by(AuditLog.id)
+    if user is not None:
+        requete = requete.where(AuditLog.user_id == user.id)
+    return list(db.session.scalars(requete))
+
+
+def poster(client: FlaskClient, url: str, page: str, **champs: str):  # type: ignore[no-untyped-def]
+    return client.post(url, data={"csrf_token": jeton_csrf(client, page), **champs})

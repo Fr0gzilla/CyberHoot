@@ -8,6 +8,7 @@ from sqlalchemy import func, or_, select
 
 from app.extensions import db
 from app.models import (
+    Category,
     Difficulty,
     PlayAnswer,
     PlaySession,
@@ -158,3 +159,7 @@ def statistiques(quiz: Quiz) -> Statistiques:
         score_moyen=round(float(moyenne)) if moyenne is not None else None,
         questions=lignes,
     )
+
+
+def categories() -> list[Category]:
+    return list(db.session.scalars(select(Category).order_by(Category.position)))

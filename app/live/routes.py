@@ -24,7 +24,7 @@ from app.auth import role_required
 from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
 from app.models import LiveGame, LivePlayer, LiveStatus, Quiz, RoleName
-from app.services import correction, live, play
+from app.services import correction, live, live_bilan, play
 
 bp = Blueprint("live", __name__)
 
@@ -138,7 +138,7 @@ def player(game_id: int) -> str | WResponse:
             return redirect(url_for("live.player", game_id=partie.id))
     live.actualiser(partie)
     db.session.refresh(joueur)
-    reponse = live.reponse_de(partie, joueur, partie.current_index)
+    reponse = live_bilan.reponse_de(partie, joueur, partie.current_index)
     en_train_de_choisir = partie.status is LiveStatus.QUESTION and reponse is None
     question = live.question_courante(partie)
     return render_template(
@@ -149,7 +149,7 @@ def player(game_id: int) -> str | WResponse:
         options=correction.ordre_affiche(question, joueur.token) if question else [],
         reponse=reponse,
         rafraichir=not en_train_de_choisir,
-        rang=live.rang(partie, joueur),
+        rang=live_bilan.rang(partie, joueur),
         form=form,
         erreur=erreur,
         etat=live.etat(partie),
@@ -209,9 +209,9 @@ def host(game_id: int) -> str:
         partie=partie,
         question=question,
         joueurs=live.joueurs_actifs(partie),
-        classement=live.classement(partie, 5 if partie.active else None),
-        histogramme=live.histogramme(partie) if question else {},
-        reussite=live.reussite(partie) if question else (0, 0),
+        classement=live_bilan.classement(partie, 5 if partie.active else None),
+        histogramme=live_bilan.histogramme(partie) if question else {},
+        reussite=live_bilan.reussite(partie) if question else (0, 0),
         options=correction.ordre_affiche(question, f"animateur-{partie.id}") if question else [],
         etat=live.etat(partie),
         qr=_qr(partie),
@@ -248,7 +248,7 @@ def host_action(game_id: int, action: str) -> WResponse:
 def export(game_id: int) -> Response:
     partie = _partie_animee(game_id)
     return Response(
-        "\ufeff" + live.export_csv(partie),  # BOM : accents corrects dans un tableur
+        "\ufeff" + live_bilan.export_csv(partie),  # BOM : accents corrects dans un tableur
         mimetype="text/csv",
         headers={"Content-Disposition": f'attachment; filename="classement-{partie.id}.csv"'},
     )

@@ -19,7 +19,7 @@ from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
 from app.models import Media, MediaStatus, Question, Quiz, Review, RoleName
 from app.quiz.forms import ReviewForm
-from app.services import audit, catalog, play, progression, quizzes, reports
+from app.services import audit, catalog, play, progression, reports
 from app.services import correction as correcteur
 from app.services import media as medias
 
@@ -51,7 +51,7 @@ def catalog_page() -> str:
         niveau=request.args.get("niveau", ""),
         page=request.args.get("page", 1, type=int) or 1,
     )
-    return render_template("quiz/catalog.html", resultats=page, categories=quizzes.categories())
+    return render_template("quiz/catalog.html", resultats=page, categories=catalog.categories())
 
 
 @bp.get("/quiz/<int:quiz_id>")

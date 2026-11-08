@@ -16,6 +16,7 @@ from app.auth.forms import ConfirmForm
 from app.extensions import db, limiter
 from app.models import DIFFICULTE_LIBELLES, TYPE_LIBELLES, Quiz, QuizStatus, RoleName
 from app.services import catalog, quizzes
+from app.services import media as medias
 
 bp = Blueprint("creator", __name__)
 
@@ -55,14 +56,14 @@ def _editeur(quiz: Quiz | None) -> str | Response | tuple[str, int]:
     if not form.validate_on_submit():
         abort(400)
     brouillon = quizzes.lire_formulaire(request.form)
-    erreurs = quizzes.recevoir_images(brouillon, request.files, current_user)
+    erreurs = medias.recevoir(brouillon.questions, request.files, current_user)
     action = request.form.get("action", "")
     if action not in {"enregistrer", "soumettre"}:
         db.session.commit()  # garde les images reçues entre deux allers-retours
         quizzes.appliquer_action(brouillon, action)
         return _rendu(quiz, brouillon, erreurs, form)
 
-    permis = quizzes.medias_autorises(current_user, quiz)
+    permis = medias.autorises(current_user, quiz)
     erreurs |= quizzes.valider(brouillon, permis, soumission=action == "soumettre")
     if erreurs:
         db.session.commit()
@@ -90,7 +91,7 @@ def _rendu(
         b=brouillon,
         erreurs=erreurs,
         form=form,
-        categories=quizzes.categories(),
+        categories=catalog.categories(),
         niveaux=DIFFICULTE_LIBELLES,
         types=TYPE_LIBELLES,
         limites={"questions": quizzes.QUESTIONS_MAX},

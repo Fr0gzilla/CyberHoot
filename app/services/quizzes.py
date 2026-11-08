@@ -18,9 +18,8 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from flask import current_app, url_for
 from sqlalchemy import delete, select
-from werkzeug.datastructures import FileStorage, ImmutableMultiDict, MultiDict
+from werkzeug.datastructures import MultiDict
 
 from app.extensions import db
 from app.models import (
@@ -36,7 +35,6 @@ from app.models import (
     User,
     utcnow,
 )
-from app.services import mail, progression
 from app.services import media as medias
 
 journal = logging.getLogger(__name__)
@@ -217,33 +215,6 @@ def brouillon_depuis(quiz: Quiz) -> Brouillon:
     )
 
 
-# --- Images --------------------------------------------------------------------------------
-
-
-def medias_autorises(auteur: User, quiz: Quiz | None) -> set[str]:
-    """Images qu'un brouillon a le droit de référencer : celles de l'auteur et du quiz édité."""
-    uids = set(db.session.scalars(select(Media.uid).where(Media.owner_id == auteur.id)))
-    if quiz is not None:
-        uids |= {q.media.uid for q in quiz.questions if q.media}
-    return uids
-
-
-def recevoir_images(
-    brouillon: Brouillon, fichiers: ImmutableMultiDict[str, FileStorage], auteur: User
-) -> Erreurs:
-    """Enregistre les images envoyées et les rattache aux questions du brouillon."""
-    erreurs: Erreurs = {}
-    for i, question in enumerate(brouillon.questions):
-        fichier = fichiers.get(f"q-{i}-image")
-        if fichier is None or not fichier.filename:
-            continue
-        try:
-            question.media_uid = medias.enregistrer(fichier, auteur).uid
-        except medias.MediaInvalideError as erreur:
-            erreurs[f"q-{i}-image"] = [str(erreur)]
-    return erreurs
-
-
 # --- Validation -----------------------------------------------------------------------------
 
 
@@ -416,45 +387,3 @@ def supprimer(quiz: Quiz) -> None:
             medias.supprimer_fichier(image)
             db.session.delete(image)
     db.session.commit()
-
-
-# --- Validation par un administrateur -------------------------------------------------------
-
-
-def _prevenir_createur(quiz: Quiz, sujet: str, gabarit: str) -> None:
-    if quiz.creator is None:
-        return
-    lien = f"{current_app.config['PUBLIC_URL']}{url_for('creator.dashboard')}"
-    mail.envoyer(quiz.creator.email, sujet, gabarit, user=quiz.creator, quiz=quiz, lien=lien)
-
-
-def publier(quiz: Quiz) -> bool:
-    if quiz.status is not QuizStatus.PENDING:
-        return False
-    images_non_saines = [
-        q.media for q in quiz.questions if q.media and q.media.status.value != "clean"
-    ]
-    if images_non_saines:
-        return False
-    quiz.status = QuizStatus.PUBLISHED
-    quiz.published_at = utcnow()
-    quiz.rejection_reason = None
-    db.session.commit()
-    _prevenir_createur(quiz, f"Votre quiz « {quiz.title} » est publié", "quiz_publie")
-    if quiz.creator is not None:
-        progression.attribuer(quiz.creator)
-    return True
-
-
-def refuser(quiz: Quiz, motif: str) -> bool:
-    if quiz.status not in {QuizStatus.PENDING, QuizStatus.PUBLISHED}:
-        return False
-    quiz.status = QuizStatus.REJECTED
-    quiz.rejection_reason = motif.strip()[:500]
-    db.session.commit()
-    _prevenir_createur(quiz, f"Votre quiz « {quiz.title} » doit être revu", "quiz_refuse")
-    return True
-
-
-def categories() -> list[Category]:
-    return list(db.session.scalars(select(Category).order_by(Category.position)))

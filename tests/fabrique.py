@@ -6,7 +6,7 @@ from flask import Flask
 
 from app.extensions import db
 from app.models import Quiz, QuizStatus, User
-from app.services import quizzes
+from app.services import moderation, quizzes
 
 CATEGORIE_HAMECONNAGE = 1
 
@@ -52,9 +52,9 @@ def creer_quiz(
                 quiz.status = QuizStatus.PENDING
                 db.session.commit()
         if statut is QuizStatus.PUBLISHED:
-            assert quizzes.publier(quiz)
+            assert moderation.publier(quiz)
         if statut is QuizStatus.REJECTED:
-            assert quizzes.refuser(quiz, "À revoir")
+            assert moderation.refuser(quiz, "À revoir")
     return quiz
 
 

@@ -17,16 +17,18 @@ from __future__ import annotations
 import hashlib
 import io
 import secrets
+from collections.abc import Sequence
 from datetime import timedelta
 from pathlib import Path
+from typing import Protocol
 
 from flask import current_app
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy import select
-from werkzeug.datastructures import FileStorage
+from werkzeug.datastructures import FileStorage, ImmutableMultiDict
 
 from app.extensions import db
-from app.models import Media, MediaStatus, Question, User, utcnow
+from app.models import Media, MediaStatus, Question, Quiz, User, utcnow
 
 FORMATS = {"PNG": "image/png", "JPEG": "image/jpeg", "WEBP": "image/webp"}
 DIMENSION_MAX = 4000
@@ -118,3 +120,33 @@ def purger_orphelins() -> int:
         db.session.delete(orphelin)
     db.session.commit()
     return len(orphelins)
+
+
+def autorises(auteur: User, quiz: Quiz | None) -> set[str]:
+    """Images qu'un brouillon a le droit de référencer : celles de l'auteur et du quiz édité."""
+    uids = set(db.session.scalars(select(Media.uid).where(Media.owner_id == auteur.id)))
+    if quiz is not None:
+        uids |= {q.media.uid for q in quiz.questions if q.media}
+    return uids
+
+
+class AvecImage(Protocol):
+    """Question d'un brouillon : reçoit l'identifiant de l'image qui lui est envoyée."""
+
+    media_uid: str
+
+
+def recevoir(
+    questions: Sequence[AvecImage], fichiers: ImmutableMultiDict[str, FileStorage], auteur: User
+) -> dict[str, list[str]]:
+    """Enregistre les images envoyées (champ q-N-image) et les rattache aux questions."""
+    erreurs: dict[str, list[str]] = {}
+    for i, question in enumerate(questions):
+        fichier = fichiers.get(f"q-{i}-image")
+        if fichier is None or not fichier.filename:
+            continue
+        try:
+            question.media_uid = enregistrer(fichier, auteur).uid
+        except MediaInvalideError as erreur:
+            erreurs[f"q-{i}-image"] = [str(erreur)]
+    return erreurs

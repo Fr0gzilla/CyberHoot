@@ -11,7 +11,7 @@ from sqlalchemy import select
 
 from app.extensions import db
 from app.models import Category, Quiz, Role, RoleName, User
-from app.services import accounts, quizzes, scan
+from app.services import accounts, moderation, quizzes, scan
 
 
 def charger_demo(auteur: User) -> list[str]:
@@ -52,7 +52,7 @@ def charger_demo(auteur: User) -> list[str]:
             raise click.ClickException(f"{fichier.name} invalide : {erreurs}")
         quiz = quizzes.enregistrer(None, brouillon, auteur)
         quizzes.soumettre(quiz)
-        quizzes.publier(quiz)
+        moderation.publier(quiz)
         crees.append(quiz.title)
     return crees
 

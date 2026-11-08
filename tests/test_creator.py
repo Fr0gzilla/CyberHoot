@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from app.extensions import db
 from app.models import Quiz, QuizStatus, RoleName, User
-from app.services import catalog, mail, quizzes
+from app.services import catalog, mail, moderation, quizzes
 from tests.conftest import connecter, creer_compte, jeton_csrf
 from tests.fabrique import brouillon, creer_quiz, formulaire
 
@@ -249,8 +249,8 @@ class TestValidation:
 
     def test_publier_un_brouillon_impossible(self, app: Flask, createur: User) -> None:
         quiz = creer_quiz(app, createur, QuizStatus.DRAFT)
-        assert not quizzes.publier(quiz)
-        assert not quizzes.refuser(quiz, "motif")
+        assert not moderation.publier(quiz)
+        assert not moderation.refuser(quiz, "motif")
 
     def test_un_admin_peut_corriger_sans_changer_le_statut(
         self, app: Flask, client: FlaskClient, createur: User, admin: User

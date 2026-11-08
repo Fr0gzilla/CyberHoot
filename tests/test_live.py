@@ -12,70 +12,10 @@ from sqlalchemy import select, update
 
 from app.extensions import db
 from app.models import LiveGame, LivePlayer, LiveStatus, PlaySession, Quiz, User, utcnow
-from app.services import live
+from app.services import live, live_bilan
 from tests.conftest import connecter, creer_compte, jeton_csrf
+from tests.direct import agir, bonnes, lancer, mauvaise, recharger, rejoindre, repondre
 from tests.fabrique import creer_quiz
-
-
-def recharger(partie: LiveGame) -> LiveGame:
-    db.session.expire_all()
-    trouvee = db.session.get(LiveGame, partie.id)
-    assert trouvee is not None
-    return trouvee
-
-
-def lancer(client: FlaskClient, quiz: Quiz, chrono: str = "20") -> LiveGame:
-    jeton = jeton_csrf(client, f"/quiz/{quiz.id}")
-    reponse = client.post(f"/direct/lancer/{quiz.id}", data={"csrf_token": jeton, "chrono": chrono})
-    assert reponse.status_code == 302, reponse.status_code
-    game_id = int(reponse.headers["Location"].rsplit("/", 1)[1])
-    partie = db.session.get(LiveGame, game_id)
-    assert partie is not None
-    return partie
-
-
-def rejoindre(client: FlaskClient, pin: str, pseudo: str):  # type: ignore[no-untyped-def]
-    jeton = jeton_csrf(client, "/direct/")
-    return client.post("/direct/", data={"csrf_token": jeton, "pin": pin, "pseudo": pseudo})
-
-
-def agir(client: FlaskClient, partie: LiveGame, action: str, **champs: str):  # type: ignore[no-untyped-def]
-    jeton = jeton_csrf(client, f"/direct/animer/{partie.id}")
-    return client.post(f"/direct/animer/{partie.id}/{action}", data={"csrf_token": jeton, **champs})
-
-
-def repondre(client: FlaskClient, partie: LiveGame, choix: list[int], position: int | None = None):  # type: ignore[no-untyped-def]
-    partie = recharger(partie)
-    # Le jeton se lit sur la page « Rejoindre » : l'écran du joueur n'a pas toujours de formulaire.
-    jeton = jeton_csrf(client, "/direct/")
-    return client.post(
-        f"/direct/jouer/{partie.id}",
-        data={
-            "csrf_token": jeton,
-            "position": str(partie.current_index if position is None else position),
-            "choix": [str(c) for c in choix],
-        },
-    )
-
-
-def bonnes(partie: LiveGame) -> list[int]:
-    question = live.question_courante(recharger(partie))
-    assert question is not None
-    return sorted(question.correct_ids)
-
-
-def mauvaise(partie: LiveGame) -> list[int]:
-    question = live.question_courante(recharger(partie))
-    assert question is not None
-    return [next(o.id for o in question.options if not o.is_correct)]
-
-
-@pytest.fixture
-def salle(app: Flask, createur: User) -> tuple[FlaskClient, LiveGame, Quiz]:
-    quiz = creer_quiz(app, createur, n=3)
-    animateur = app.test_client()
-    connecter(animateur, "createur@example.org")
-    return animateur, lancer(animateur, quiz), quiz
 
 
 class TestLancement:
@@ -223,7 +163,7 @@ class TestSalleDAttente:
         assert cible is not None
         agir(animateur, partie, "exclure", joueur=str(cible.id))
         assert joueur.get(f"/direct/jouer/{partie.id}").status_code == 302
-        assert live.classement(recharger(partie)) == []
+        assert live_bilan.classement(recharger(partie)) == []
 
 
 class TestDeroulement:
@@ -259,7 +199,7 @@ class TestDeroulement:
         _, partie, alice, bob = en_jeu
         repondre(alice, partie, bonnes(partie))
         repondre(bob, partie, mauvaise(partie))
-        scores = {j.nickname: j.score for j in live.classement(recharger(partie))}
+        scores = {j.nickname: j.score for j in live_bilan.classement(recharger(partie))}
         assert 900 <= scores["Alice"] <= 1000
         assert scores["Bob"] == 0
         # Tout le monde a répondu : correction affichée sans attendre la fin du chrono.
@@ -270,7 +210,7 @@ class TestDeroulement:
         _, partie, alice, _ = en_jeu
         repondre(alice, partie, mauvaise(partie))
         repondre(alice, partie, bonnes(partie))
-        assert live.classement(recharger(partie))[0].score == 0
+        assert live_bilan.classement(recharger(partie))[0].score == 0
 
     def test_reponse_hors_delai_refusee(self, en_jeu) -> None:  # type: ignore[no-untyped-def]
         _, partie, alice, _ = en_jeu
@@ -283,7 +223,7 @@ class TestDeroulement:
         repondre(alice, partie, bonnes(partie))
         partie = recharger(partie)
         assert partie.status is LiveStatus.REVEAL
-        assert all(j.score == 0 for j in live.classement(partie))
+        assert all(j.score == 0 for j in live_bilan.classement(partie))
 
     def test_reponse_a_une_ancienne_question_refusee(self, en_jeu) -> None:  # type: ignore[no-untyped-def]
         animateur, partie, alice, _ = en_jeu
@@ -313,7 +253,7 @@ class TestDeroulement:
         partie = recharger(partie)
         assert partie.status is LiveStatus.QUESTION
         repondre(alice, partie, bonnes(partie))
-        assert live.classement(recharger(partie))[0].score > 0
+        assert live_bilan.classement(recharger(partie))[0].score > 0
 
     def test_partie_complete_jusqu_au_podium(self, app: Flask, en_jeu) -> None:  # type: ignore[no-untyped-def]
         animateur, partie, alice, bob = en_jeu
@@ -358,59 +298,3 @@ class TestDeroulement:
         assert sessions[0].score == 1
         assert sessions[0].total == 3
         assert "1 / 3" in inscrit.get("/profil/").get_data(as_text=True)
-
-
-class TestService:
-    def test_bareme(self) -> None:
-        assert live.points(False, 0, 20) == 0
-        assert live.points(True, 0, 20) == 1000
-        assert live.points(True, 10_000, 20) == 750
-        assert live.points(True, 25_000, 20) == 500
-
-    def test_export_csv_neutralise_les_formules(
-        self, app: Flask, salle: tuple[FlaskClient, LiveGame, Quiz]
-    ) -> None:
-        _, partie, _ = salle
-        db.session.add(
-            LivePlayer(game_id=partie.id, nickname="=1+1", nickname_key="x", token="t" * 43)
-        )
-        db.session.commit()
-        assert "'=1+1" in live.export_csv(recharger(partie))
-
-    def test_purge(self, app: Flask, salle: tuple[FlaskClient, LiveGame, Quiz]) -> None:
-        _, partie, _ = salle
-        partie.last_activity_at = utcnow() - timedelta(hours=4)
-        db.session.commit()
-        assert live.purger() == (1, 0)
-        partie = recharger(partie)
-        assert partie.status is LiveStatus.FINISHED
-        partie.ended_at = utcnow() - timedelta(hours=25)
-        db.session.commit()
-        identifiant = partie.id
-        assert live.purger() == (0, 1)
-        db.session.expire_all()
-        assert db.session.get(LiveGame, identifiant) is None
-
-    def test_actions_inconnues_ou_hors_etat(
-        self, salle: tuple[FlaskClient, LiveGame, Quiz]
-    ) -> None:
-        animateur, partie, _ = salle
-        assert agir(animateur, partie, "inconnue").status_code == 404
-        assert not live.pause(partie)
-        assert not live.reprendre(partie)
-        assert not live.suivant(partie)
-        assert not live.exclure(partie, 123456)
-        assert live.terminer(partie)
-        assert not live.terminer(partie)
-
-
-def test_essais_de_pin_limites_mais_pas_les_arrivees(
-    app: Flask, salle: tuple[FlaskClient, LiveGame, Quiz]
-) -> None:
-    _, partie, _ = salle
-    client = app.test_client()
-    for i in range(35):
-        assert rejoindre(app.test_client(), partie.pin or "", f"Eleve {i}").status_code == 302
-    codes = [rejoindre(client, "000000", "Devin").status_code for _ in range(31)]
-    assert codes[-1] == 429
-    assert set(codes[:30]) == {404}

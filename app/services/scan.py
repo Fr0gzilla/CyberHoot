@@ -26,7 +26,7 @@ from sqlalchemy import select
 
 from app.extensions import db
 from app.models import Media, MediaStatus, utcnow
-from app.services import audit, live
+from app.services import audit, live_entretien
 from app.services import media as medias
 
 journal = logging.getLogger(__name__)
@@ -142,7 +142,7 @@ def boucle(intervalle: float = 15.0) -> None:  # pragma: no cover  (processus du
     while True:
         analyser_en_attente()
         medias.purger_orphelins()
-        live.purger()
+        live_entretien.purger()
         audit.purger()
         db.session.remove()
         time.sleep(intervalle)

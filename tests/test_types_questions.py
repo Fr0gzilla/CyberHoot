@@ -9,7 +9,7 @@ from werkzeug.datastructures import MultiDict
 
 from app.extensions import db
 from app.models import PlaySession, Question, QuestionKind, Quiz, QuizStatus, User
-from app.services import correction, quizzes
+from app.services import correction, moderation, quizzes
 from tests.conftest import connecter, jeton_csrf
 from tests.fabrique import brouillon_types, formulaire
 
@@ -18,7 +18,7 @@ def creer(app: Flask, auteur: User) -> Quiz:
     with app.test_request_context():
         quiz = quizzes.enregistrer(None, brouillon_types(), auteur)
         assert quizzes.soumettre(quiz) == {}
-        assert quizzes.publier(quiz)
+        assert moderation.publier(quiz)
     return quiz
 
 

@@ -15,7 +15,7 @@ from sqlalchemy import select
 from app.extensions import db
 from app.models import Media, MediaStatus, QuizStatus, User
 from app.services import media as medias
-from app.services import scan
+from app.services import moderation, scan
 from tests.conftest import connecter, creer_compte, jeton_csrf
 from tests.fabrique import brouillon, formulaire
 
@@ -136,7 +136,6 @@ class TestAcces:
         self, app: Flask, client: FlaskClient, createur: User
     ) -> None:
         from app.models import Quiz
-        from app.services import quizzes
 
         media = self.preparer(client)
         quiz = db.session.scalar(select(Quiz).where(Quiz.title == "Avec image"))
@@ -144,11 +143,11 @@ class TestAcces:
         quiz.status = QuizStatus.PENDING
         db.session.commit()
         with app.test_request_context():
-            assert not quizzes.publier(quiz), (
+            assert not moderation.publier(quiz), (
                 "publication refusée tant que l'image n'est pas analysée"
             )
             assert scan.analyser_en_attente() == 1
-            assert quizzes.publier(quiz)
+            assert moderation.publier(quiz)
         reponse = app.test_client().get(f"/media/{media.uid}")
         assert reponse.status_code == 200
         assert reponse.mimetype == "image/png"

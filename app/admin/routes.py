@@ -28,7 +28,7 @@ from app.models import (
     utcnow,
 )
 from app.quiz.forms import RejectForm
-from app.services import admin, audit, quizzes, reports
+from app.services import admin, audit, catalog, moderation, reports
 
 bp = Blueprint("admin", __name__)
 
@@ -103,7 +103,7 @@ def review(quiz_id: int) -> str:
 def publish(quiz_id: int) -> Response:
     quiz = _objet(Quiz, quiz_id)
     _formulaire_valide()
-    if quizzes.publier(quiz):
+    if moderation.publier(quiz):
         audit.journaliser("admin_quiz_publie", cible=f"quiz {quiz.id} « {quiz.title} »")
         flash(f"« {quiz.title} » est publié.", "success")
     else:
@@ -127,7 +127,7 @@ def reject(quiz_id: int) -> Response | str | tuple[str, int]:
             reject_form=form,
             images_en_attente=[],
         ), 422
-    if quizzes.refuser(quiz, form.reason.data):
+    if moderation.refuser(quiz, form.reason.data):
         audit.journaliser(
             "admin_quiz_refuse", cible=f"quiz {quiz.id} « {quiz.title} »", motif=form.reason.data
         )
@@ -210,7 +210,7 @@ def categories() -> str | Response:
             flash(f"Catégorie « {nom} » enregistrée.", "success")
         return redirect(url_for("admin.categories"))
     return render_template(
-        "admin/categories.html", categories=admin.categories(), form=ConfirmForm()
+        "admin/categories.html", categories=catalog.categories(), form=ConfirmForm()
     )
 
 
@@ -272,7 +272,7 @@ def report_action(report_id: int) -> Response:
         db.session.commit()
     elif action == "depublier" and signalement.quiz is not None:
         quiz = signalement.quiz
-        if quizzes.refuser(quiz, f"Dépublié après signalement : {signalement.reason}"):
+        if moderation.refuser(quiz, f"Dépublié après signalement : {signalement.reason}"):
             audit.journaliser("admin_quiz_refuse", cible=f"quiz {quiz.id} « {quiz.title} »")
         reports.clore(signalement, moi, "quiz dépublié")
     elif action == "clore":

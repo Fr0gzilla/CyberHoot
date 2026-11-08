@@ -12,7 +12,6 @@ from sqlalchemy import func, or_, select
 from app.extensions import db
 from app.models import (
     Badge,
-    Category,
     LiveGame,
     PlaySession,
     Quiz,
@@ -152,10 +151,6 @@ def changer_activation(admin: User, cible: User, actif: bool) -> Refus | None:
     cible.is_enabled = actif
     db.session.commit()
     return None
-
-
-def categories() -> list[Category]:
-    return list(db.session.scalars(select(Category).order_by(Category.position)))
 
 
 def badges() -> list[Badge]:
