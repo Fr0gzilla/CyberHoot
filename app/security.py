@@ -3,14 +3,19 @@
 La CSP n'autorise ni script ni style en ligne : tout le JavaScript et le CSS sont servis
 en fichiers depuis l'application. Le nonce est disponible dans les gabarits (csp_nonce())
 pour le cas exceptionnel d'une balise <script> qui en aurait besoin.
+
+HSTS : envoyé seulement sur une requête arrivée en HTTPS (le proxy le signale par
+X-Forwarded-Proto) ; le navigateur refusera ensuite tout accès en clair pendant un an.
 """
 
 from __future__ import annotations
 
 import secrets
 
-from flask import Flask, g
+from flask import Flask, g, request
 from werkzeug.wrappers import Response
+
+HSTS_DUREE = 365 * 24 * 60 * 60
 
 
 def _nonce() -> str:
@@ -49,6 +54,8 @@ def installer(app: Flask) -> None:
         entetes["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
         entetes["Cross-Origin-Opener-Policy"] = "same-origin"
         entetes["Cross-Origin-Resource-Policy"] = "same-origin"
+        if request.is_secure:
+            entetes["Strict-Transport-Security"] = f"max-age={HSTS_DUREE}; includeSubDomains"
         # Les pages d'un compte ne doivent pas rester dans un cache partagé.
         if "Cache-Control" not in entetes and reponse.mimetype == "text/html":
             entetes["Cache-Control"] = "no-store"

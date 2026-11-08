@@ -21,7 +21,7 @@ Quiz de 6 questions, chrono de 10 s. Pile complète (`make up`) : Nginx, 3 proce
 de 4 fils, MySQL 8.4, Redis, sur un Mac (Docker dans une machine virtuelle Colima, 4 cœurs).
 
 ```bash
-python outils/charge_direct.py --url http://localhost:8080 --joueurs 200 \
+python outils/charge_direct.py --url https://localhost:8443 --ca secrets/tls/cyberhoot.crt --joueurs 200 \
   --email <compte créateur> --mot-de-passe '<mot de passe>' --quiz 1 --chrono 10
 ```
 

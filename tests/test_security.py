@@ -30,6 +30,18 @@ def test_entetes_de_securite(client: FlaskClient) -> None:
     assert len(entetes["X-Request-ID"]) >= 8
 
 
+def test_hsts_seulement_en_https(client: FlaskClient) -> None:
+    assert "Strict-Transport-Security" not in client.get("/").headers
+    hsts = client.get("/", base_url="https://localhost").headers["Strict-Transport-Security"]
+    assert hsts == "max-age=31536000; includeSubDomains"
+
+
+def test_permissions_policy_coupe_les_capteurs(client: FlaskClient) -> None:
+    politique = client.get("/").headers["Permissions-Policy"]
+    for capteur in ("camera=()", "microphone=()", "geolocation=()"):
+        assert capteur in politique
+
+
 def test_nonce_change_a_chaque_requete_et_correspond_aux_scripts(client: FlaskClient) -> None:
     nonces = []
     for _ in range(2):

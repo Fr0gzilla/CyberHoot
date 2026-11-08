@@ -11,3 +11,5 @@ accesslog = "-"
 errorlog = "-"
 proc_name = "cyberhoot"
 forwarded_allow_ips = "*"  # le conteneur n'est joignable que par Nginx (réseau interne)
+# Interface de pilotage (gunicorn 26) inutile ici, et le système de fichiers est en lecture seule.
+control_socket_disable = True

@@ -84,7 +84,11 @@ jobs:
         run: |
           make secrets
           docker compose up -d --wait
-          curl -fsS http://localhost:8080/health
+          curl -fsS --cacert secrets/tls/cyberhoot.crt https://localhost:8443/health
+          curl -sS -o /dev/null -w '%{http_code} %{redirect_url}' http://localhost:8080/ \
+            | grep -qx '301 https://localhost:8443/'
+          curl -fsSI --cacert secrets/tls/cyberhoot.crt https://localhost:8443/ \
+            | grep -qi '^strict-transport-security: max-age=31536000'
           docker compose exec -T app id -u | grep -qx 10001
       - name: Journaux en cas d'échec
         if: failure()

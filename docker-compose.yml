@@ -1,4 +1,5 @@
-# Pile complète : seul Nginx publie un port, sur la boucle locale par défaut.
+# Pile complète : seul Nginx publie des ports (HTTP qui redirige, HTTPS), sur la boucle
+# locale par défaut.
 # La base et Redis ne sont joignables que depuis le réseau interne.
 name: cyberhoot
 
@@ -10,11 +11,20 @@ services:
         condition: service_healthy
     ports:
       - "${HTTP_BIND:-127.0.0.1}:${HTTP_PORT:-8080}:8080"
+      - "${HTTP_BIND:-127.0.0.1}:${HTTPS_PORT:-8443}:8443"
     # Dossier monté (et non fichier par fichier) : une configuration modifiée est bien vue
-    # au rechargement, même quand l'éditeur remplace le fichier.
+    # au redémarrage, même quand l'éditeur remplace le fichier.
     command: ["nginx", "-c", "/etc/nginx/cyberhoot/nginx.conf", "-g", "daemon off;"]
+    environment:
+      # L'image Nginx remplit les gabarits de ce dossier au démarrage.
+      NGINX_ENVSUBST_TEMPLATE_DIR: /etc/nginx/cyberhoot/modeles
+      NGINX_ENVSUBST_OUTPUT_DIR: /tmp
+      # Port ajouté aux redirections HTTP → HTTPS (vide si HTTPS est servi sur le port 443).
+      HTTPS_SUFFIXE: ${HTTPS_SUFFIXE-:8443}
     volumes:
       - ./docker/nginx:/etc/nginx/cyberhoot:ro
+      # Certificat et clé : auto-signés par `make secrets` en local, voir docs/https.md.
+      - ./secrets/tls:/etc/nginx/tls:ro
     read_only: true
     tmpfs:
       - /var/cache/nginx
@@ -41,10 +51,10 @@ services:
       DB_USER: cyberhoot
       DB_PASSWORD_FILE: /run/secrets/db_password
       REDIS_URL: redis://redis:6379/0
-      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:8080}
-      # Essai local en HTTP : les cookies « Secure » ne passeraient pas. À laisser à true
-      # dès que le site est servi en HTTPS.
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      PUBLIC_URL: ${PUBLIC_URL:-https://localhost:8443}
+      # Le site n'est servi qu'en HTTPS : cookies « Secure » (false seulement pour un essai
+      # sans le proxy).
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
       MAIL_BACKEND: ${MAIL_BACKEND:-console}
       MAIL_FROM: ${MAIL_FROM:-CyberHoot <no-reply@cyberhoot.local>}
       SMTP_HOST: ${SMTP_HOST:-localhost}

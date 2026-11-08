@@ -14,6 +14,13 @@ secrets: ## Génère les secrets locaux (une seule fois, jamais versionnés)
 	@for f in secret_key db_password db_root_password; do \
 	  [ -s secrets/$$f ] || { openssl rand -base64 48 | tr -d '\n' > secrets/$$f; chmod 644 secrets/$$f; echo "secrets/$$f créé"; }; \
 	done
+	@# Certificat auto-signé pour HTTPS en local (825 jours, localhost et 127.0.0.1).
+	@mkdir -p secrets/tls
+	@[ -s secrets/tls/cyberhoot.crt ] || { \
+	  openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj "/CN=localhost" \
+	    -addext "subjectAltName=DNS:localhost,IP:127.0.0.1" \
+	    -keyout secrets/tls/cyberhoot.key -out secrets/tls/cyberhoot.crt 2>/dev/null; \
+	  chmod 644 secrets/tls/cyberhoot.key secrets/tls/cyberhoot.crt; echo "secrets/tls/cyberhoot.crt créé"; }
 
 install: secrets ## Construit les images (application et vérification)
 	docker build --target test -t $(TEST_IMAGE) .
@@ -39,10 +46,10 @@ test-mysql: ## Tests sur un MySQL jetable (comme l'intégration continue)
 	  -e TEST_DATABASE_URL='mysql+pymysql://test:test@cyberhoot-test-db/test?charset=utf8mb4' \
 	  $(TEST_IMAGE) pytest; status=$$?; docker stop cyberhoot-test-db >/dev/null; exit $$status
 
-up: secrets ## Démarre la pile (http://localhost:8080)
+up: secrets ## Démarre la pile (https://localhost:8443)
 	$(COMPOSE) up -d --build --wait
-	@# Nginx ne relit pas seul sa configuration (fichiers montés) : on la recharge.
-	$(COMPOSE) exec proxy nginx -c /etc/nginx/cyberhoot/nginx.conf -s reload
+	@# Nginx ne relit pas seul sa configuration (fichiers montés, gabarits) : on le redémarre.
+	$(COMPOSE) restart proxy
 
 down: ## Arrête la pile (les données restent)
 	$(COMPOSE) down
@@ -51,8 +58,9 @@ logs: ## Suit les journaux de l'application
 	$(COMPOSE) logs -f app
 
 smoke: up ## Démarre la pile et vérifie qu'elle répond
-	@curl -fsS http://localhost:$${HTTP_PORT:-8080}/health && echo
-	@curl -fsS -o /dev/null -w "accueil : %{http_code}\n" http://localhost:$${HTTP_PORT:-8080}/
+	@curl -fsS --cacert secrets/tls/cyberhoot.crt https://localhost:$${HTTPS_PORT:-8443}/health && echo
+	@curl -fsS --cacert secrets/tls/cyberhoot.crt -o /dev/null -w "accueil : %{http_code}\n" https://localhost:$${HTTPS_PORT:-8443}/
+	@curl -sS -o /dev/null -w "HTTP redirigé vers : %{redirect_url}\n" http://localhost:$${HTTP_PORT:-8080}/
 
 admin: ## Crée un compte administrateur (questions interactives)
 	$(COMPOSE) exec app flask --app wsgi creer-admin

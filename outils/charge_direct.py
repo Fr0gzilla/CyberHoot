@@ -4,8 +4,8 @@ Simule un animateur et N joueurs qui rejoignent, interrogent l'état chaque seco
 répondent à chaque question, tous depuis la même adresse IP (cas d'une salle de classe
 derrière le réseau de l'établissement). Mesure les temps de réponse et compte les erreurs.
 
-    python outils/charge_direct.py --url http://localhost:8080 --joueurs 50 \\
-        --email admin@exemple.fr --mot-de-passe '…' --quiz 1
+    python outils/charge_direct.py --url https://localhost:8443 --ca secrets/tls/cyberhoot.crt \\
+        --joueurs 50 --email admin@exemple.fr --mot-de-passe '…' --quiz 1
 
 À lancer uniquement contre une instance que vous avez démarrée vous-même.
 """
@@ -16,6 +16,7 @@ import argparse
 import http.cookiejar
 import random
 import re
+import ssl
 import statistics
 import threading
 import time
@@ -29,11 +30,17 @@ ERREURS: dict[str, int] = defaultdict(int)
 VERROU = threading.Lock()
 
 
+CONTEXTE_TLS: ssl.SSLContext | None = None
+
+
 class Navigateur:
     def __init__(self, base: str) -> None:
         self.base = base.rstrip("/")
+        if not self.base.startswith(("http://", "https://")):
+            raise SystemExit("--url doit commencer par http:// ou https://")
         self.ouvreur = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
+            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()),
+            urllib.request.HTTPSHandler(context=CONTEXTE_TLS),
         )
 
     def requete(self, nom: str, chemin: str, donnees: dict[str, object] | None = None) -> str:
@@ -48,7 +55,12 @@ class Navigateur:
             corps = urllib.parse.urlencode(donnees, doseq=True).encode()
         debut = time.perf_counter()
         try:
-            with self.ouvreur.open(self.base + chemin, corps, timeout=15) as reponse:
+            # En HTTPS, la protection CSRF exige un en-tête Referer de la même origine.
+            # Adresse donnée par la personne qui lance le test (http ou https vérifié).
+            demande = urllib.request.Request(  # noqa: S310
+                self.base + chemin, corps, headers={"Referer": self.base + chemin}
+            )
+            with self.ouvreur.open(demande, timeout=15) as reponse:
                 texte: str = reponse.read().decode()
                 adresse: str = reponse.geturl()
         except urllib.error.HTTPError as erreur:
@@ -143,13 +155,18 @@ def joueur(
 
 def principal() -> None:
     args = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    args.add_argument("--url", default="http://localhost:8080")
+    args.add_argument("--url", default="https://localhost:8443")
+    args.add_argument(
+        "--ca", help="certificat à accepter (auto-signé en local : secrets/tls/cyberhoot.crt)"
+    )
     args.add_argument("--joueurs", type=int, default=50)
     args.add_argument("--email", required=True)
     args.add_argument("--mot-de-passe", required=True)
     args.add_argument("--quiz", type=int, default=1)
     args.add_argument("--chrono", type=int, default=10)
     options = args.parse_args()
+    global CONTEXTE_TLS
+    CONTEXTE_TLS = ssl.create_default_context(cafile=options.ca)
 
     nav, game_id, pin = animateur(
         options.url, options.email, options.mot_de_passe, options.quiz, options.chrono
