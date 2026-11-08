@@ -35,7 +35,7 @@ Ce qui a changé par rapport à l'ancienne version, défaut par défaut et preuv
 | **v2.0 — En direct** | Parties en direct : code PIN et QR code, salle d'attente, chrono, points selon la rapidité, histogramme, classement et podium, pause, exclusion, export CSV ; testé avec 200 joueurs ([rapport](docs/charge-v2.0.md)) | ✅ |
 | **v2.1 — Contenu cyber** | Questions vrai/faux, « repérer le phishing » et « remettre dans l'ordre », 18 badges, progression par thème et séries, 8 quiz de démonstration de 10 questions | ✅ |
 | **v2.2 — Administrer** | Double authentification (obligatoire pour les administrateurs), journal d'audit, gestion des comptes, catégories et badges, signalements, tableau de bord, export de ses données, [registre RGPD](docs/rgpd/registre.md) | ✅ |
-| **v3.0 — Finition** | Revue d'accessibilité WCAG 2.2 AA outillée ([rapport](docs/accessibilite.md)), HTTPS avec HSTS ([guide](docs/https.md)), [avant / après](docs/avant-apres.md) des 20 défauts de l'ancienne version, [politique de sécurité](SECURITY.md), [dossier technique](docs/dossier/) | ✅ |
+| **v3.0 — Finition** | Revue d'accessibilité WCAG 2.2 AA outillée ([rapport](docs/accessibilite.md)), HTTPS avec HSTS ([guide](docs/https.md)), [avant / après](docs/avant-apres.md) des 20 défauts de l'ancienne version, [politique de sécurité](SECURITY.md) | ✅ |
 
 ## Démarrer
 
@@ -88,8 +88,7 @@ Navigateur ──► Nginx (HTTPS, seuls ports publiés, limite de débit)
 - `docs/modele/` : règles de gestion, dictionnaire, MCD, MLD, diagrammes, schéma SQL généré.
 - `tests/` : tests du comportement, exécutés sur MySQL en intégration continue.
 - `outils/` : test de charge d'une partie en direct, audit d'accessibilité.
-- `docs/` : modélisation, rapport de charge, accessibilité, HTTPS, RGPD, avant / après,
-  dossier technique.
+- `docs/` : modélisation, rapport de charge, accessibilité, HTTPS, RGPD, avant / après.
 
 ## Sécurité
 

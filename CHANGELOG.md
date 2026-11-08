@@ -17,8 +17,7 @@
   ignoré, règle ruff contre les `except` trop larges.
 - Découpage des services trop longs : bilan et classement du direct, pseudos, entretien,
   décision de l'administrateur (`moderation`), réception des images dans `media`.
-- `SECURITY.md` complété ; captures d'écran dans le README ; dossier technique
-  (`docs/dossier/`).
+- `SECURITY.md` complété ; captures d'écran dans le README.
 - gunicorn 26 : interface de pilotage désactivée (système de fichiers en lecture seule).
 
 ## v2.2 — Administrer
