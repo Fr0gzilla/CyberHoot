@@ -4,6 +4,7 @@
 {% block content %}
   <div class="mx-auto max-w-xl" data-direct="joueur" data-etat="{{ url_for('live.state', game_id=partie.id) }}"
        data-version="{{ partie.version }}" data-joueurs="{{ etat.joueurs }}" data-chrono-total="{{ partie.time_limit }}">
+    <h1 class="sr-only">Partie en direct : {{ partie.quiz.title }}</h1>
     <p class="flex items-center justify-between font-mono text-sm font-semibold">
       <span>{{ joueur.nickname }}</span>
       <span>{{ joueur.score }} pts</span>

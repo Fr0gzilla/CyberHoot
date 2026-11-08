@@ -52,7 +52,17 @@
     });
   }
 
+  // Formulaire renvoyé avec des erreurs : le focus va au premier champ à corriger, dont le
+  // message d'erreur est lu grâce à aria-describedby.
+  function placerFocusSurErreur() {
+    var champ = document.querySelector('[aria-invalid="true"]');
+    if (champ) {
+      champ.focus();
+    }
+  }
+
   brancherTheme();
   brancherMessages();
   brancherConfirmations();
+  placerFocusSurErreur();
 })();

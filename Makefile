@@ -3,7 +3,7 @@
 COMPOSE := docker compose
 TEST_IMAGE := cyberhoot:test
 
-.PHONY: help secrets install verify test test-mysql demo smoke up down logs admin schema lock css clean
+.PHONY: help secrets install verify test test-mysql demo smoke up down logs admin schema lock css clean accessibilite
 
 help: ## Affiche cette aide
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F ':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
@@ -68,6 +68,20 @@ admin: ## Crée un compte administrateur (questions interactives)
 demo: ## Ajoute les quiz de démonstration (questions interactives)
 	@read -p "Adresse du compte auteur (créateur ou admin) : " email; \
 	$(COMPOSE) exec app flask --app wsgi charger-demo --email "$$email"
+
+AXE_URL := https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js
+AXE_SHA256 := b511cd9dec01c76f4b2ad1723b66b6db37d4c2eb4ed199076e1829d9ee7b75e3
+
+accessibilite: ## Audit axe-core (WCAG 2.2 AA) de la pile démarrée — voir docs/accessibilite.md
+	@mkdir -p .cache
+	@[ -s .cache/axe.min.js ] || curl -fsSL $(AXE_URL) -o .cache/axe.min.js
+	@echo "$(AXE_SHA256)  .cache/axe.min.js" | shasum -a 256 -c - >/dev/null || \
+	  { echo "empreinte d'axe-core inattendue"; rm -f .cache/axe.min.js; exit 1; }
+	docker run --rm --network cyberhoot_front -v "$$PWD/outils":/o:ro \
+	  -v "$$PWD/.cache/axe.min.js":/axe.min.js:ro \
+	  -e AUDIT_EMAIL -e AUDIT_MOT_DE_PASSE -e AUDIT_TOTP -e AUDIT_QUIZ \
+	  mcr.microsoft.com/playwright/python:v1.49.1-noble sh -c \
+	  "pip install -q --break-system-packages playwright==1.49.1 pyotp && python3 /o/audit_accessibilite.py /axe.min.js"
 
 schema: ## Régénère docs/modele/schema.sql depuis les migrations
 	docker build -q --target test -t $(TEST_IMAGE) . >/dev/null

@@ -10,6 +10,8 @@
   /* Focus toujours visible au clavier */
   :focus-visible { @apply outline outline-[3px] outline-offset-2 outline-phosphore-600 dark:outline-phosphore-300; }
   a { @apply text-phosphore-700 underline-offset-2 hover:underline dark:text-phosphore-300; }
+  /* Lien au milieu d'un texte : souligné, pour ne pas se distinguer par la seule couleur (WCAG 1.4.1). */
+  :where(p, li, dd, td, label, small) a { @apply underline; }
   h1, h2, h3 { @apply font-mono tracking-tight; }
   h1 { @apply text-3xl font-extrabold sm:text-4xl; }
   h2 { @apply text-xl font-bold; }

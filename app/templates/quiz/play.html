@@ -3,9 +3,9 @@
 {% block title %}{{ partie.quiz.title }} — question {{ partie.current_index + 1 }}{% endblock %}
 {% block content %}
   <div class="mx-auto max-w-3xl">
-    <p class="font-mono text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+    <h1 class="font-mono text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
       {{ partie.quiz.title }} · Question {{ partie.current_index + 1 }} sur {{ partie.total }}
-    </p>
+    </h1>
     <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-nuit-800" role="progressbar"
          aria-valuemin="0" aria-valuemax="{{ partie.total }}" aria-valuenow="{{ partie.current_index }}" aria-label="Progression">
       <div class="h-2 bg-phosphore-600 dark:bg-phosphore-400 barre-{{ (100 * partie.current_index // partie.total) // 10 * 10 }}"></div>
